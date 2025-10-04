@@ -1,10 +1,10 @@
 ## IngSoft1V1
 
-#Integrantes
+# Integrantes
 - Andres Calderon
 - Bastian Kramarenko
 - Joaquin Fuenzalida
 - Benjamin Vallejos
 
-#Problema
+# Problema
 Eventos viña: venta de entradas y varificacion de entradas
