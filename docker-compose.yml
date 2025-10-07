@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  reportes-api:
+    build: .
+    container_name: eventos_vina_reportes
+    ports:
+      - "5001:5001"
+    volumes:
+      # Montar el directorio instance para persistir la base de datos
+      - ./instance:/app/instance
+      # Montar directorio para reportes generados (opcional)
+      - ./reportes_generados:/app/reportes_generados
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/hello"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  reportes_data:
+    driver: local
