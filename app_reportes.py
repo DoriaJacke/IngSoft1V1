@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify, send_file
 from flask_sqlalchemy import SQLAlchemy
-from flask_restx import Api, Resource
+from flask_restx import Api, Resource, reqparse
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime, date, time
 import io
 import pandas as pd
 from reportlab.lib.pagesizes import A4
@@ -29,6 +29,18 @@ class EventoReporte(db.Model):
     nombre = db.Column(db.String(200), nullable=False)
     fecha_evento = db.Column(db.DateTime, nullable=False)
     lugar = db.Column(db.String(200), nullable=False)
+
+class EventoLog(db.Model):
+    __tablename__ = "eventos_log"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    evento_id = db.Column(db.Integer, nullable=False)
+    nombre = db.Column(db.String(200), nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    hora = db.Column(db.Time, nullable=False)
+    ubicacion = db.Column(db.String(200), nullable=False)
+    tipo_operacion = db.Column(db.String(10), nullable=False)  # 'add' o 'delete'
+    fecha_operacion = db.Column(db.DateTime, default=datetime.utcnow)
 
 class SectorReporte(db.Model):
     __tablename__ = "sectores_reporte"
@@ -60,6 +72,21 @@ class VentaReporte(db.Model):
 # Crear tablas
 with app.app_context():
     db.create_all()
+
+# Request parsers para validación de datos
+add_evento_parser = reqparse.RequestParser()
+add_evento_parser.add_argument('evento_id', type=int, required=True, help='ID del evento es requerido')
+add_evento_parser.add_argument('nombre', type=str, required=True, help='Nombre del evento es requerido')
+add_evento_parser.add_argument('fecha', type=str, required=True, help='Fecha del evento (YYYY-MM-DD) es requerida')
+add_evento_parser.add_argument('hora', type=str, required=True, help='Hora del evento (HH:MM:SS) es requerida')
+add_evento_parser.add_argument('ubicacion', type=str, required=True, help='Ubicación del evento es requerida')
+
+delete_evento_parser = reqparse.RequestParser()
+delete_evento_parser.add_argument('evento_id', type=int, required=True, help='ID del evento es requerido')
+delete_evento_parser.add_argument('nombre', type=str, required=True, help='Nombre del evento es requerido')
+delete_evento_parser.add_argument('fecha', type=str, required=True, help='Fecha del evento (YYYY-MM-DD) es requerida')
+delete_evento_parser.add_argument('hora', type=str, required=True, help='Hora del evento (HH:MM:SS) es requerida')
+delete_evento_parser.add_argument('ubicacion', type=str, required=True, help='Ubicación del evento es requerida')
 
 # HISTORIA DE USUARIO PRINCIPAL
 @api.route('/reportes/ventas')
@@ -364,11 +391,236 @@ class VentasResource(Resource):
         ventas = VentaReporte.query.all()
         return [{'id': v.id, 'evento_id': v.evento_id, 'sector_id': v.sector_id, 'fecha_venta': v.fecha_venta.isoformat(), 'cantidad': v.cantidad, 'total': v.total} for v in ventas], 200
 
-@api.route('/hello')
-class HelloResource(Resource):
+# Endpoints para logging de eventos
+@api.route('/eventos/add')
+class AddEventoResource(Resource):
+    @api.doc(
+        'agregar_evento',
+        params={
+            'evento_id': 'ID del evento (requerido)',
+            'nombre': 'Nombre del evento (requerido)',
+            'fecha': 'Fecha del evento formato YYYY-MM-DD (requerido)',
+            'hora': 'Hora del evento formato HH:MM:SS (requerido)',
+            'ubicacion': 'Ubicación del evento (requerido)'
+        }
+    )
+    @api.expect(add_evento_parser)
+    def post(self):
+        """
+        Agregar un evento al log del sistema
+        """
+        try:
+            # Usar el parser para obtener y validar los datos
+            args = add_evento_parser.parse_args()
+            
+            # Validar y convertir fecha
+            try:
+                fecha_evento = datetime.strptime(args['fecha'], '%Y-%m-%d').date()
+            except ValueError:
+                return {
+                    'success': False,
+                    'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
+                }, 400
+            
+            # Validar y convertir hora
+            try:
+                hora_evento = datetime.strptime(args['hora'], '%H:%M:%S').time()
+            except ValueError:
+                return {
+                    'success': False,
+                    'error': 'Formato de hora inválido. Use HH:MM:SS'
+                }, 400
+            
+            # Combinar fecha y hora para crear datetime
+            fecha_hora_evento = datetime.combine(fecha_evento, hora_evento)
+            
+            # Crear/actualizar evento en la tabla principal
+            evento_existente = EventoReporte.query.filter_by(id=args['evento_id']).first()
+            if not evento_existente:
+                # Crear nuevo evento en la tabla principal
+                nuevo_evento = EventoReporte(
+                    id=args['evento_id'],
+                    nombre=args['nombre'],
+                    fecha_evento=fecha_hora_evento,
+                    lugar=args['ubicacion']
+                )
+                db.session.add(nuevo_evento)
+            
+            # Crear log de la operación
+            nuevo_evento_log = EventoLog(
+                evento_id=args['evento_id'],
+                nombre=args['nombre'],
+                fecha=fecha_evento,
+                hora=hora_evento,
+                ubicacion=args['ubicacion'],
+                tipo_operacion='add'
+            )
+            
+            # Guardar en base de datos
+            db.session.add(nuevo_evento_log)
+            db.session.commit()
+            
+            return {
+                'success': True,
+                'message': 'Evento agregado exitosamente',
+                'evento': {
+                    'id': nuevo_evento_log.id,
+                    'evento_id': nuevo_evento_log.evento_id,
+                    'nombre': nuevo_evento_log.nombre,
+                    'fecha': nuevo_evento_log.fecha.isoformat(),
+                    'hora': nuevo_evento_log.hora.isoformat(),
+                    'ubicacion': nuevo_evento_log.ubicacion,
+                    'tipo_operacion': nuevo_evento_log.tipo_operacion,
+                    'fecha_operacion': nuevo_evento_log.fecha_operacion.isoformat()
+                }
+            }, 201
+            
+        except Exception as e:
+            db.session.rollback()
+            return {
+                'success': False,
+                'error': 'Error interno del servidor',
+                'detalle': str(e)
+            }, 500
+
+@api.route('/eventos/delete')
+class DeleteEventoResource(Resource):
+    @api.doc(
+        'eliminar_evento',
+        params={
+            'evento_id': 'ID del evento a eliminar (requerido)',
+            'nombre': 'Nombre del evento (requerido)',
+            'fecha': 'Fecha del evento formato YYYY-MM-DD (requerido)',
+            'hora': 'Hora del evento formato HH:MM:SS (requerido)',
+            'ubicacion': 'Ubicación del evento (requerido)'
+        }
+    )
+    @api.expect(delete_evento_parser)
+    def delete(self):
+        """
+        Eliminar un evento del sistema y registrar en el log
+        """
+        try:
+            # Usar el parser para obtener y validar los datos
+            args = delete_evento_parser.parse_args()
+            
+            # Validar y convertir fecha
+            try:
+                fecha_evento = datetime.strptime(args['fecha'], '%Y-%m-%d').date()
+            except ValueError:
+                return {
+                    'success': False,
+                    'error': 'Formato de fecha inválido. Use YYYY-MM-DD'
+                }, 400
+            
+            # Validar y convertir hora
+            try:
+                hora_evento = datetime.strptime(args['hora'], '%H:%M:%S').time()
+            except ValueError:
+                return {
+                    'success': False,
+                    'error': 'Formato de hora inválido. Use HH:MM:SS'
+                }, 400
+            
+            # Eliminar evento de la tabla principal si existe
+            evento_existente = EventoReporte.query.filter_by(id=args['evento_id']).first()
+            if evento_existente:
+                db.session.delete(evento_existente)
+            
+            # Crear log de eliminación
+            evento_log_delete = EventoLog(
+                evento_id=args['evento_id'],
+                nombre=args['nombre'],
+                fecha=fecha_evento,
+                hora=hora_evento,
+                ubicacion=args['ubicacion'],
+                tipo_operacion='delete'
+            )
+            
+            # Guardar en base de datos
+            db.session.add(evento_log_delete)
+            db.session.commit()
+            
+            return {
+                'success': True,
+                'message': 'Evento eliminado exitosamente',
+                'evento': {
+                    'id': evento_log_delete.id,
+                    'evento_id': evento_log_delete.evento_id,
+                    'nombre': evento_log_delete.nombre,
+                    'fecha': evento_log_delete.fecha.isoformat(),
+                    'hora': evento_log_delete.hora.isoformat(),
+                    'ubicacion': evento_log_delete.ubicacion,
+                    'tipo_operacion': evento_log_delete.tipo_operacion,
+                    'fecha_operacion': evento_log_delete.fecha_operacion.isoformat()
+                }
+            }, 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return {
+                'success': False,
+                'error': 'Error interno del servidor',
+                'detalle': str(e)
+            }, 500
+
+@api.route('/eventos/logs')
+class EventosLogsResource(Resource):
+    @api.doc(
+        'listar_logs_eventos',
+        params={
+            'tipo_operacion': 'Filtrar por tipo de operación: add, delete (opcional)',
+            'evento_id': 'Filtrar por ID de evento (opcional)'
+        }
+    )
     def get(self):
-        """Verificar que la API funciona"""
-        return {"message": "API de Reportes Eventos Viña funcionando", "status": "OK"}, 200
+        """
+        Listar todos los logs de eventos con filtros opcionales
+        """
+        try:
+            tipo_operacion = request.args.get('tipo_operacion')
+            evento_id = request.args.get('evento_id', type=int)
+            
+            query = EventoLog.query
+            
+            if tipo_operacion:
+                if tipo_operacion not in ['add', 'delete']:
+                    return {
+                        'success': False,
+                        'error': 'tipo_operacion debe ser "add" o "delete"'
+                    }, 400
+                query = query.filter(EventoLog.tipo_operacion == tipo_operacion)
+            
+            if evento_id:
+                query = query.filter(EventoLog.evento_id == evento_id)
+            
+            logs = query.order_by(EventoLog.fecha_operacion.desc()).all()
+            
+            logs_data = []
+            for log in logs:
+                logs_data.append({
+                    'id': log.id,
+                    'evento_id': log.evento_id,
+                    'nombre': log.nombre,
+                    'fecha': log.fecha.isoformat(),
+                    'hora': log.hora.isoformat(),
+                    'ubicacion': log.ubicacion,
+                    'tipo_operacion': log.tipo_operacion,
+                    'fecha_operacion': log.fecha_operacion.isoformat()
+                })
+            
+            return {
+                'success': True,
+                'logs': logs_data,
+                'total': len(logs_data)
+            }, 200
+            
+        except Exception as e:
+            return {
+                'success': False,
+                'error': 'Error interno del servidor',
+                'detalle': str(e)
+            }, 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
