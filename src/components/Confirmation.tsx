@@ -1,14 +1,20 @@
 import { events } from '../data/events';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
-import { CheckCircle, Download, Calendar, MapPin } from 'lucide-react';
+import { CheckCircle, Download, Calendar, MapPin, Mail, AlertCircle } from 'lucide-react';
+import { Purchase } from '../types';
 
 interface ConfirmationProps {
   eventId: string;
   onNavigate: (view: string) => void;
+  purchaseData?: Purchase;
 }
 
-export const Confirmation: React.FC<ConfirmationProps> = ({ eventId, onNavigate }) => {
+export const Confirmation: React.FC<ConfirmationProps> = ({ 
+  eventId, 
+  onNavigate, 
+  purchaseData 
+}) => {
   const { user } = useAuth();
   const event = events.find(e => e.id === eventId);
 
@@ -16,7 +22,9 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ eventId, onNavigate 
     return <div>Evento no encontrado</div>;
   }
 
-  const orderNumber = `ORD-${Date.now()}`;
+  // Usar datos de compra si están disponibles, sino generar datos por defecto
+  const orderNumber = purchaseData?.orderNumber || `ORD-${Date.now()}`;
+  const emailSent = purchaseData?.emailSent ?? true;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
@@ -29,8 +37,28 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ eventId, onNavigate 
           </div>
 
           <h1 className="mb-4">¡Compra exitosa!</h1>
+          
+          {/* Estado del email */}
+          <div className="mb-6">
+            {emailSent ? (
+              <div className="flex items-center justify-center gap-2 text-green-600 mb-4">
+                <Mail className="w-5 h-5" />
+                <span className="text-sm">Email de confirmación enviado</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2 text-yellow-600 mb-4">
+                <AlertCircle className="w-5 h-5" />
+                <span className="text-sm">Email de confirmación pendiente</span>
+              </div>
+            )}
+          </div>
+          
           <p className="text-muted-foreground mb-8">
-            Tu compra ha sido procesada correctamente. Hemos enviado un email de confirmación a {user?.email}
+            Tu compra ha sido procesada correctamente. 
+            {emailSent 
+              ? `Hemos enviado un email de confirmación a ${user?.email}` 
+              : `Recibirás un email de confirmación en ${user?.email} en breve`
+            }
           </p>
 
           <div className="bg-muted rounded-lg p-6 mb-8 text-left">
@@ -80,7 +108,7 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ eventId, onNavigate 
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => onNavigate('event', eventId)}
+              onClick={() => onNavigate('home')}
             >
               Ver detalles del evento
             </Button>
@@ -88,9 +116,14 @@ export const Confirmation: React.FC<ConfirmationProps> = ({ eventId, onNavigate 
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-2">
             ¿Tienes alguna pregunta? Contáctanos a soporte@eventoschile.cl
           </p>
+          {!emailSent && (
+            <p className="text-sm text-yellow-600">
+              Si no recibes el email en los próximos minutos, revisa tu carpeta de spam
+            </p>
+          )}
         </div>
       </div>
     </div>
