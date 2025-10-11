@@ -8,13 +8,35 @@
 
 ## 🚀 Usar la Imagen desde Docker Hub
 
+### ✅ IMAGEN DISPONIBLE AHORA
+
+**Tu imagen está disponible en Docker Hub:**
+- **Repository**: `jfuenzalida/eventos-vina-dashboard`
+- **Tags**: `latest`, `v1.0`
+- **URL**: https://hub.docker.com/r/jfuenzalida/eventos-vina-dashboard
+- **Size**: 2.27GB
+- **Digest**: sha256:f67668b113436a2bab8f80a6385fa1697136fa70962ff7cd89e3b0439feed88a
+
 ### Ejecutar directamente desde Docker Hub
 ```bash
-# Descargar y ejecutar la imagen
-docker run -d -p 5001:5001 --name eventos-reportes jfuenzalida/eventos-vina-reportes:latest
+# Opción 1: Comando único (más simple)
+docker run -d --name eventos_dashboard -p 5001:5001 -p 3000:3000 jfuenzalida/eventos-vina-dashboard:latest
 
-# Acceder a la API
-# http://localhost:5001/docs/
+# Opción 2: Con volumen persistente
+docker run -d \
+  --name eventos_dashboard \
+  -p 5001:5001 \
+  -p 3000:3000 \
+  -v eventos_data:/app/instance \
+  jfuenzalida/eventos-vina-dashboard:latest
+
+# Opción 3: Usar versión específica
+docker run -d --name eventos_dashboard -p 5001:5001 -p 3000:3000 jfuenzalida/eventos-vina-dashboard:v1.0
+
+# Acceder a la aplicación:
+# Frontend: http://localhost:3000
+# API: http://localhost:5001
+# Swagger: http://localhost:5001/docs
 ```
 
 ### Usar con Docker Compose
@@ -23,18 +45,24 @@ docker run -d -p 5001:5001 --name eventos-reportes jfuenzalida/eventos-vina-repo
 version: '3.8'
 
 services:
-  reportes-api:
-    image: jfuenzalida/eventos-vina-reportes:latest
-    container_name: eventos_vina_reportes
+  eventos-dashboard:
+    image: jfuenzalida/eventos-vina-dashboard:latest
+    container_name: eventos_vina_dashboard
     ports:
-      - "5001:5001"
+      - "5001:5001"  # API Flask
+      - "3000:3000"  # Frontend React
     volumes:
-      - ./instance:/app/instance
+      - eventos_data:/app/instance
       - ./reportes_generados:/app/reportes_generados
     environment:
       - FLASK_ENV=production
+      - NODE_ENV=production
       - PYTHONUNBUFFERED=1
     restart: unless-stopped
+
+volumes:
+  eventos_data:
+    driver: local
 ```
 
 ## 🔄 Proceso de Actualización
