@@ -31,8 +31,8 @@ for i in {1..30}; do
 done
 
 log "🌐 Iniciando servidor React..."
-# Servir la aplicación React construida
-npx serve -s dist -l 3000 > /app/logs/react.log 2>&1 &
+# Servir la aplicación React construida desde el directorio build (configurado en vite.config.ts)
+npx serve -s build -l 3000 > /app/logs/react.log 2>&1 &
 REACT_PID=$!
 
 log "⏳ Esperando a que React inicie completamente..."
