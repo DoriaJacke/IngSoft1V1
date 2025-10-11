@@ -25,3 +25,23 @@ export interface TicketSelection {
   quantity: number;
   totalPrice: number;
 }
+
+export interface Purchase {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  eventId: string;
+  quantity: number;
+  unitPrice: number;
+  serviceCharge: number;
+  totalPrice: number;
+  purchaseDate: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  emailSent: boolean;
+}
+
+export interface EmailStatus {
+  sent: boolean;
+  sentAt?: string;
+  error?: string;
+}

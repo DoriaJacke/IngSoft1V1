@@ -4,17 +4,27 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { ArrowLeft, Minus, Plus, CreditCard } from 'lucide-react';
+import { ArrowLeft, Minus, Plus, CreditCard, Loader2 } from 'lucide-react';
+import { 
+  sendPurchaseConfirmationEmail, 
+  generateOrderNumber, 
+  formatPurchaseDate,
+  initEmailJS,
+  PurchaseDetails
+} from '../services/emailService';
+import { Purchase, EmailStatus } from '../types';
 
 interface CheckoutProps {
   eventId: string;
-  onNavigate: (view: string, eventId?: string) => void;
+  onNavigate: (view: string, eventId?: string, purchaseData?: Purchase) => void;
 }
 
 export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
   const { user } = useAuth();
   const event = events.find(e => e.id === eventId);
   const [quantity, setQuantity] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>({ sent: false });
 
   if (!event) {
     return <div>Evento no encontrado</div>;
@@ -34,9 +44,75 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
     }
   };
 
-  const handlePayment = () => {
-    // Simular proceso de pago
-    onNavigate('confirmation', eventId);
+  const handlePayment = async () => {
+    if (!user || !event) return;
+    
+    setIsProcessing(true);
+    
+    try {
+      // Inicializar EmailJS
+      initEmailJS();
+      
+      // Generar datos de compra
+      const orderNumber = generateOrderNumber();
+      const serviceCharge = quantity * 500;
+      const totalPrice = event.price * quantity + serviceCharge;
+      const purchaseDate = formatPurchaseDate();
+      
+      // Crear objeto de compra
+      const purchase: Purchase = {
+        id: `purchase_${Date.now()}`,
+        orderNumber,
+        userId: user.id,
+        eventId: event.id,
+        quantity,
+        unitPrice: event.price,
+        serviceCharge,
+        totalPrice,
+        purchaseDate,
+        status: 'completed',
+        emailSent: false
+      };
+      
+      // Preparar datos para el email
+      const purchaseDetails: PurchaseDetails = {
+        orderNumber,
+        event,
+        quantity,
+        totalPrice,
+        serviceCharge,
+        purchaseDate,
+        user
+      };
+      
+      // Enviar email de confirmación
+      const emailResult = await sendPurchaseConfirmationEmail(purchaseDetails);
+      
+      // Actualizar estado del email
+      setEmailStatus({
+        sent: emailResult.success,
+        sentAt: emailResult.success ? new Date().toISOString() : undefined,
+        error: emailResult.success ? undefined : emailResult.message
+      });
+      
+      // Actualizar el estado de la compra
+      purchase.emailSent = emailResult.success;
+      
+      // Simular proceso de pago exitoso
+      setTimeout(() => {
+        setIsProcessing(false);
+        // Navegar a confirmación con datos de compra
+        onNavigate('confirmation', eventId, purchase);
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error en el proceso de pago:', error);
+      setIsProcessing(false);
+      setEmailStatus({
+        sent: false,
+        error: 'Error en el proceso de pago'
+      });
+    }
   };
 
   return (
@@ -185,10 +261,30 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
                 className="w-full"
                 size="lg"
                 onClick={handlePayment}
+                disabled={isProcessing}
               >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Pagar ahora
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Procesando pago...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Pagar ahora
+                  </>
+                )}
               </Button>
+              
+              {/* Mostrar estado del email si hay error */}
+              {emailStatus.error && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ El pago se procesó correctamente, pero hubo un problema al enviar el email de confirmación. 
+                    Recibirás la confirmación por email en breve.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

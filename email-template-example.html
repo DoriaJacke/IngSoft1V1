@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f5f5f5; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            border-bottom: 2px solid #6366f1;
+            padding-bottom: 20px;
+        }
+        .logo { 
+            color: #6366f1; 
+            font-size: 28px; 
+            font-weight: bold; 
+            margin-bottom: 10px;
+        }
+        .ticket-info { 
+            background-color: #f8fafc; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+            border-left: 4px solid #6366f1;
+        }
+        .order-number { 
+            background-color: #6366f1; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 5px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        .price-summary {
+            background-color: #f9fafb;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+        }
+        .total-price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        .instructions {
+            background-color: #fef3c7;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #f59e0b;
+            margin: 20px 0;
+        }
+        .footer { 
+            margin-top: 30px; 
+            text-align: center; 
+            color: #6b7280; 
+            font-size: 14px; 
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+        }
+        .qr-placeholder {
+            width: 120px;
+            height: 120px;
+            background-color: #e5e7eb;
+            border: 2px dashed #9ca3af;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎫 EventosChile</div>
+            <h1 style="color: #1f2937; margin: 0;">¡Confirmación de Compra!</h1>
+        </div>
+        
+        <p style="font-size: 16px;">Hola <strong>Juan Pérez</strong>,</p>
+        
+        <p>¡Gracias por tu compra! Hemos recibido tu pago y confirmamos tu entrada para el siguiente evento:</p>
+        
+        <div class="ticket-info">
+            <h2 style="margin-top: 0; color: #1f2937;">Sinergia - Reunión 2024</h2>
+            <p><strong>🎤 Artista:</strong> Sinergia</p>
+            <p><strong>📅 Fecha:</strong> 15 de marzo, 2024</p>
+            <p><strong>🕐 Hora:</strong> 20:00 hrs</p>
+            <p><strong>📍 Lugar:</strong> Estadio Nacional, Santiago, Chile</p>
+            <p><strong>🎫 Cantidad de entradas:</strong> 2</p>
+        </div>
+        
+        <div class="order-number">
+            Número de Orden: ORD-1703875234567-123
+        </div>
+        
+        <div class="price-summary">
+            <h3 style="margin-top: 0;">💰 Resumen de la compra:</h3>
+            <p>Entradas (2): $90.000 CLP</p>
+            <p>Cargo por servicio: $1.000 CLP</p>
+            <hr style="border: none; border-top: 1px solid #d1d5db; margin: 10px 0;">
+            <p class="total-price">Total: $91.000 CLP</p>
+            <p style="font-size: 14px; color: #6b7280;">Fecha de compra: 28 de diciembre, 2024 - 15:30</p>
+        </div>
+        
+        <div class="instructions">
+            <h3 style="margin-top: 0; color: #92400e;">📋 Instrucciones importantes:</h3>
+            <ul style="margin: 10px 0;">
+                <li>Presenta este email en el evento para validar tu entrada</li>
+                <li>Llega con al menos 30 minutos de anticipación</li>
+                <li>Recuerda traer un documento de identidad válido</li>
+                <li>Las puertas abren 1 hora antes del show</li>
+            </ul>
+        </div>
+        
+        <!-- Placeholder para QR Code (se puede implementar posteriormente) -->
+        <div style="text-align: center;">
+            <p style="font-weight: bold;">Código QR de entrada:</p>
+            <div class="qr-placeholder">
+                QR Code
+                <br>
+                (Próximamente)
+            </div>
+        </div>
+        
+        <div style="background-color: #ecfdf5; padding: 15px; border-radius: 5px; border-left: 4px solid #10b981; margin: 20px 0;">
+            <p style="margin: 0; color: #065f46;">
+                <strong>✅ ¡Tu compra está confirmada!</strong><br>
+                Guarda este email como comprobante de tu compra.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>¿Necesitas ayuda?</strong></p>
+            <p>Si tienes alguna pregunta, contáctanos a <a href="mailto:soporte@eventoschile.cl" style="color: #6366f1;">soporte@eventoschile.cl</a></p>
+            <p>📞 Teléfono: +56 9 1234 5678</p>
+            <p>🕐 Horario de atención: Lunes a Viernes 9:00 - 18:00</p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+            <p style="font-style: italic;">¡Te esperamos en el evento!</p>
+            <p><strong>Equipo EventosChile</strong> 🎉</p>
+        </div>
+    </div>
+</body>
+</html>
