@@ -4,6 +4,7 @@ import { User } from '../types';
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => boolean;
+  loginAdmin: (email: string) => boolean;
   register: (email: string, password: string, name: string, lastName: string) => boolean;
   logout: () => void;
   isAuthenticated: boolean;
@@ -15,7 +16,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
 
   const login = (email: string, password: string): boolean => {
-    // Simulación de login
+    // Verificar si el usuario ya existe
     const storedUsers = localStorage.getItem('users');
     if (storedUsers) {
       const users = JSON.parse(storedUsers);
@@ -30,7 +31,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return true;
       }
     }
+    
+    // Si no existe, crear usuario automáticamente para simplificar el demo
+    if (email && password && email.includes('@')) {
+      const newUser = {
+        id: Date.now().toString(),
+        email,
+        password,
+        name: email.split('@')[0], // Usar parte del email como nombre
+        lastName: 'Usuario'
+      };
+
+      const users = storedUsers ? JSON.parse(storedUsers) : [];
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      setUser({
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        lastName: newUser.lastName
+      });
+      return true;
+    }
+    
     return false;
+  };
+
+  const loginAdmin = (email: string): boolean => {
+    // Login de administrador con cualquier email
+    setUser({
+      id: 'admin_' + Date.now().toString(),
+      email: email,
+      name: 'Administrador',
+      lastName: 'Sistema',
+      isAdmin: true
+    });
+    return true;
   };
 
   const register = (email: string, password: string, name: string, lastName: string): boolean => {
@@ -71,6 +108,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <AuthContext.Provider value={{
       user,
       login,
+      loginAdmin,
       register,
       logout,
       isAuthenticated: !!user

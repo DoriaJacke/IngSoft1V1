@@ -35,22 +35,24 @@ export const Header = ({ onNavigate }: HeaderProps) => {
           </div>
           
           {/* Enlaces de navegación para administración */}
-          <div className="hidden md:flex items-center gap-2 mr-4">
-            <button
-              onClick={() => onNavigate('management')}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-            >
-              <span>⚙️</span>
-              Gestión
-            </button>
-            <button
-              onClick={() => onNavigate('reports')}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-            >
-              <span>📊</span>
-              Reportes
-            </button>
-          </div>
+          {isAuthenticated && user?.isAdmin && (
+            <div className="hidden md:flex items-center gap-2 mr-4">
+              <button
+                onClick={() => onNavigate('management')}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+              >
+                <span>⚙️</span>
+                Gestión
+              </button>
+              <button
+                onClick={() => onNavigate('reports')}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+              >
+                <span>📊</span>
+                Reportes
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
