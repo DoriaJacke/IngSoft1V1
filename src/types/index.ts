@@ -18,6 +18,7 @@ export interface User {
   email: string;
   name: string;
   lastName: string;
+  isAdmin?: boolean;
 }
 
 export interface TicketSelection {

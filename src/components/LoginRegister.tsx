@@ -11,7 +11,7 @@ interface LoginRegisterProps {
 }
 
 export const LoginRegister: React.FC<LoginRegisterProps> = ({ onNavigate, returnEventId }) => {
-  const { login, register } = useAuth();
+  const { login, loginAdmin, register } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   
@@ -39,6 +39,16 @@ export const LoginRegister: React.FC<LoginRegisterProps> = ({ onNavigate, return
       }
     } else {
       setError('Email o contraseña incorrectos');
+    }
+  };
+
+  const handleAdminAccess = () => {
+    const email = prompt('Ingrese su email para acceso de administrador:');
+    if (email && email.trim()) {
+      const success = loginAdmin(email.trim());
+      if (success) {
+        onNavigate('home');
+      }
     }
   };
 
@@ -136,6 +146,25 @@ export const LoginRegister: React.FC<LoginRegisterProps> = ({ onNavigate, return
                   required
                   className="mt-1"
                 />
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  className="text-sm text-muted-foreground hover:text-primary"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleAdminAccess}
+                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  🔑 Administrador
+                </button>
               </div>
 
               <Button type="submit" className="w-full">
