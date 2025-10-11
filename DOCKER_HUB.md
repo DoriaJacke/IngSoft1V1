@@ -1,10 +1,10 @@
-# 🐳 Guía de Docker Hub - Eventos Viña Reportes
+# 🐳 SUBIR CONTENEDOR A DOCKER HUB - EVENTOS VIÑA DASHBOARD
 
-## 📦 Imagen en Docker Hub
+## 📦 Información de la Imagen
 
-**Repositorio:** `jfuenzalida/eventos-vina-reportes`  
+**Repositorio:** `jfuenzalida/eventos-vina-dashboard`  
 **Tag:** `latest`  
-**URL:** https://hub.docker.com/r/jfuenzalida/eventos-vina-reportes
+**URL:** https://hub.docker.com/r/jfuenzalida/eventos-vina-dashboard
 
 ## 🚀 Usar la Imagen desde Docker Hub
 
