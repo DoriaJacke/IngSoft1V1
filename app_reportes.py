@@ -4,7 +4,7 @@ from flask_restx import Api, Resource, reqparse
 from flask_cors import CORS
 from datetime import datetime, date, time
 import io
-import pandas as pd
+# import pandas as pd  # Comentado temporalmente
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -321,53 +321,60 @@ class ReporteVentasResource(Resource):
     
     def _generar_excel(self, data):
         """Generar Excel para análisis detallado"""
-        buffer = io.BytesIO()
+        # Funcionalidad de Excel temporalmente deshabilitada
+        return jsonify({
+            "error": "Funcionalidad de Excel temporalmente no disponible",
+            "alternativa": "Use formato PDF o JSON"
+        }), 503
         
-        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
-            # Hoja 1: Resumen Ejecutivo
-            resumen_df = pd.DataFrame([data['resumen_ejecutivo']])
-            resumen_df.to_excel(writer, sheet_name='Resumen Ejecutivo', index=False)
-            
-            # Hoja 2: Análisis por Sector
-            sectores_data = []
-            for sector, analisis in data['analisis_por_sector'].items():
-                sectores_data.append({
-                    'Sector': sector,
-                    'Entradas_Vendidas': analisis['entradas_vendidas'],
-                    'Total_Ventas': analisis['total_ventas'],
-                    'Precio_Promedio': analisis['precio_promedio']
-                })
-            
-            if sectores_data:
-                sectores_df = pd.DataFrame(sectores_data)
-                sectores_df.to_excel(writer, sheet_name='Análisis por Sector', index=False)
-            
-            # Hoja 3: Análisis por Evento
-            eventos_data = []
-            for evento, analisis in data['analisis_por_evento'].items():
-                eventos_data.append({
-                    'Evento': evento,
-                    'Total_Ventas': analisis['total_ventas'],
-                    'Total_Entradas': analisis['total_entradas']
-                })
-            
-            if eventos_data:
-                eventos_df = pd.DataFrame(eventos_data)
-                eventos_df.to_excel(writer, sheet_name='Análisis por Evento', index=False)
-            
-            # Hoja 4: Datos Detallados
-            if data['datos_detallados']:
-                detalle_df = pd.DataFrame(data['datos_detallados'])
-                detalle_df.to_excel(writer, sheet_name='Datos Detallados', index=False)
-        
-        buffer.seek(0)
-        
-        return send_file(
-            buffer,
-            as_attachment=True,
-            download_name=f'reporte_estrategico_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx',
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+        # CÓDIGO ORIGINAL COMENTADO:
+        # buffer = io.BytesIO()
+        # 
+        # with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        #     # Hoja 1: Resumen Ejecutivo
+        #     resumen_df = pd.DataFrame([data['resumen_ejecutivo']])
+        #     resumen_df.to_excel(writer, sheet_name='Resumen Ejecutivo', index=False)
+        #     
+        #     # Hoja 2: Análisis por Sector
+        #     sectores_data = []
+        #     for sector, analisis in data['analisis_por_sector'].items():
+        #         sectores_data.append({
+        #             'Sector': sector,
+        #             'Entradas_Vendidas': analisis['entradas_vendidas'],
+        #             'Total_Ventas': analisis['total_ventas'],
+        #             'Precio_Promedio': analisis['precio_promedio']
+        #         })
+        #     
+        #     if sectores_data:
+        #         sectores_df = pd.DataFrame(sectores_data)
+        #         sectores_df.to_excel(writer, sheet_name='Análisis por Sector', index=False)
+        #     
+        #     # Hoja 3: Análisis por Evento
+        #     eventos_data = []
+        #     for evento, analisis in data['analisis_por_evento'].items():
+        #         eventos_data.append({
+        #             'Evento': evento,
+        #             'Total_Ventas': analisis['total_ventas'],
+        #             'Total_Entradas': analisis['total_entradas']
+        #         })
+        #     
+        #     if eventos_data:
+        #         eventos_df = pd.DataFrame(eventos_data)
+        #         eventos_df.to_excel(writer, sheet_name='Análisis por Evento', index=False)
+        #     
+        #     # Hoja 4: Datos Detallados
+        #     if data['datos_detallados']:
+        #         detalle_df = pd.DataFrame(data['datos_detallados'])
+        #         detalle_df.to_excel(writer, sheet_name='Datos Detallados', index=False)
+        # 
+        # buffer.seek(0)
+        # 
+        # return send_file(
+        #     buffer,
+        #     as_attachment=True,
+        #     download_name=f'reporte_estrategico_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx',
+        #     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        # )
 
 # Endpoints auxiliares para gestión de datos
 @api.route('/eventos')
