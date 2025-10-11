@@ -1,6 +1,6 @@
-# 🐳 Docker - API de Reportes Eventos Viña
+# 🎉 Eventos Viña - Dashboard Integrado
 
-Esta guía explica cómo ejecutar la API de reportes usando Docker.
+Esta guía explica cómo ejecutar el dashboard completo (API + Frontend) usando Docker.
 
 ## 📋 Prerrequisitos
 
