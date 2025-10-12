@@ -1,7 +1,125 @@
 // Configuración
-const SLIDES_TEMPLATE_ID = '1KDodkirVXvs0wyq5fF30f7JPWub0y8NcQ4z48Hu48pQ';
-const DRIVE_FOLDER_ID = '15PAd0TyBRqvPdsQ_wlwozYjCUT6cGzEk';
+const SPREADSHEET_ID = '108W3oHaMevCwH_Jzde5cAeRhHhRRIj5IfaE-kIWq664'; // Tu spreadsheet existente
+const SLIDES_TEMPLATE_ID = '1KDodkirVXvs0wyq5fF30f7JPWub0y8NcQ4z48Hu48pQ'; // Tu plantilla de Slides
+const DRIVE_FOLDER_ID = '15PAd0TyBRqvPdsQ_wlwozYjCUT6cGzEk'; // Tu carpeta de entradas
 const SHEET_NAME = 'Hoja 1';
+
+// Función doPost para manejar peticiones HTTP desde el frontend
+function doPost(e) {
+  // Configurar headers CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400'
+  };
+
+  // Manejar preflight request (OPTIONS)
+  if (e.parameter && e.parameter.method === 'OPTIONS') {
+    return ContentService
+      .createTextOutput('')
+      .setMimeType(ContentService.MimeType.TEXT)
+      .setHeaders(headers);
+  }
+
+  try {
+
+    // Procesar datos de compra
+    if (e.postData && e.postData.contents) {
+      const datosCompra = JSON.parse(e.postData.contents);
+
+      // Agregar compra al spreadsheet
+      const compraAgregada = agregarCompra(datosCompra);
+
+      if (compraAgregada) {
+        // Generar entrada inmediatamente
+        generarEntradaPorOrden(datosCompra.orderNumber);
+
+        // Obtener el PDF generado
+        const pdfBase64 = obtenerPdfBase64(datosCompra.orderNumber);
+
+        if (pdfBase64) {
+          return ContentService
+            .createTextOutput(JSON.stringify({
+              success: true,
+              pdfBase64: pdfBase64,
+              message: 'Entrada generada exitosamente'
+            }))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders(headers);
+        } else {
+          return ContentService
+            .createTextOutput(JSON.stringify({
+              success: false,
+              error: 'Error al obtener el PDF generado'
+            }))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders(headers);
+        }
+      } else {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: false,
+            error: 'Error al agregar la compra'
+          }))
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders(headers);
+      }
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Datos no válidos'
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders(headers);
+
+  } catch (error) {
+    Logger.log('Error en doPost: ' + error.toString());
+
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    };
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders(headers);
+  }
+}
+
+// Función para obtener PDF en base64 por número de orden
+function obtenerPdfBase64(orderNumber) {
+  try {
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const files = folder.getFiles();
+
+    while (files.hasNext()) {
+      const file = files.next();
+      const fileName = file.getName();
+
+      // Buscar archivo que contenga el orderNumber
+      if (fileName.includes(orderNumber) && fileName.endsWith('.pdf')) {
+        const pdfBlob = file.getBlob();
+        const base64Data = Utilities.base64Encode(pdfBlob.getBytes());
+        return base64Data;
+      }
+    }
+
+    Logger.log('PDF no encontrado para orden: ' + orderNumber);
+    return null;
+
+  } catch (error) {
+    Logger.log('Error obteniendo PDF base64: ' + error.toString());
+    return null;
+  }
+}
 
 // Función para agregar una nueva compra al spreadsheet
 function agregarCompra(datosCompra) {

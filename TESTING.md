@@ -3,7 +3,7 @@
 ## Cómo probar el sistema de email
 
 ### 1. Configuración previa
-1. Asegúrate de haber configurado EmailJS siguiendo `EMAIL_SETUP.md`
+1. Asegúrate de haber configurado SendGrid siguiendo `EMAIL_SETUP.md`
 2. Verifica que las credenciales estén correctamente configuradas en `src/services/emailService.ts`
 
 ### 2. Prueba del flujo completo
@@ -56,17 +56,17 @@ El email debe incluir:
 #### Email no llega
 1. Verifica las credenciales en `emailService.ts`
 2. Revisa la consola del navegador para errores
-3. Comprueba la configuración del template en EmailJS
+3. Comprueba la configuración del template en SendGrid
 4. Verifica que el servicio de email esté activo
 
 #### Error en el proceso
 1. Abre las herramientas de desarrollador (F12)
 2. Ve a la pestaña Console
-3. Busca errores relacionados con EmailJS
-4. Verifica la configuración de CORS en EmailJS
+3. Busca errores relacionados con SendGrid
+4. Verifica la configuración de CORS en SendGrid
 
 #### Formato del email incorrecto
-1. Revisa el template en EmailJS
+1. Revisa el template en SendGrid
 2. Comprueba que las variables coincidan con el código
 3. Verifica el HTML del template
 
@@ -83,8 +83,8 @@ Para testing, puedes usar estos datos de ejemplo:
 
 ### 7. Límites del plan gratuito
 
-- **EmailJS gratuito**: 200 emails/mes
-- **Tamaño máximo**: 50KB por email
+- **SendGrid gratuito**: 100 emails/día
+- **Tamaño máximo**: 30MB por email
 - **Rate limiting**: Aplica para envíos masivos
 
 ### 8. Logs y debugging
@@ -105,6 +105,6 @@ El sistema registra información en la consola:
 
 Una vez que funcione correctamente:
 - [ ] Configurar templates para recordatorios
-- [ ] Implementar códigos QR
+- [ ] Integrar generación automática de entradas con generacionEntrada.gs
 - [ ] Añadir métricas de delivery
 - [ ] Considerar migrar a backend para mayor seguridad

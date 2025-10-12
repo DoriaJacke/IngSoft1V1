@@ -5,11 +5,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ArrowLeft, Minus, Plus, CreditCard, Loader2 } from 'lucide-react';
-import { 
-  sendPurchaseConfirmationEmail, 
-  generateOrderNumber, 
+import {
+  sendPurchaseConfirmationEmail,
+  generateOrderNumber,
   formatPurchaseDate,
   initEmailJS,
+  generateTicketPDF,
   PurchaseDetails
 } from '../services/emailService';
 import { Purchase, EmailStatus } from '../types';
@@ -46,19 +47,19 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
 
   const handlePayment = async () => {
     if (!user || !event) return;
-    
+
     setIsProcessing(true);
-    
+
     try {
       // Inicializar EmailJS
       initEmailJS();
-      
+
       // Generar datos de compra
       const orderNumber = generateOrderNumber();
       const serviceCharge = quantity * 500;
       const totalPrice = event.price * quantity + serviceCharge;
       const purchaseDate = formatPurchaseDate();
-      
+
       // Crear objeto de compra
       const purchase: Purchase = {
         id: `purchase_${Date.now()}`,
@@ -73,7 +74,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
         status: 'completed',
         emailSent: false
       };
-      
+
       // Preparar datos para el email
       const purchaseDetails: PurchaseDetails = {
         orderNumber,
@@ -84,27 +85,44 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
         purchaseDate,
         user
       };
-      
-      // Enviar email de confirmación
-      const emailResult = await sendPurchaseConfirmationEmail(purchaseDetails);
-      
+
+      // Intentar generar entrada PDF usando Google Apps Script
+      console.log('Generando entrada PDF...');
+      let ticketPdfBase64: string | undefined;
+
+      try {
+        const ticketResult = await generateTicketPDF(purchaseDetails);
+        if (ticketResult.success && ticketResult.pdfBase64) {
+          ticketPdfBase64 = ticketResult.pdfBase64;
+          console.log('Entrada PDF generada exitosamente');
+        } else {
+          console.warn('No se pudo generar la entrada PDF:', ticketResult.message);
+        }
+      } catch (error) {
+        console.warn('Error de CORS al generar PDF - continuando sin adjunto:', error);
+        // Continuar sin PDF - el email se enviará normalmente
+      }
+
+      // Enviar email de confirmación (con o sin adjunto PDF)
+      const emailResult = await sendPurchaseConfirmationEmail(purchaseDetails, ticketPdfBase64);
+
       // Actualizar estado del email
       setEmailStatus({
         sent: emailResult.success,
         sentAt: emailResult.success ? new Date().toISOString() : undefined,
         error: emailResult.success ? undefined : emailResult.message
       });
-      
+
       // Actualizar el estado de la compra
       purchase.emailSent = emailResult.success;
-      
+
       // Simular proceso de pago exitoso
       setTimeout(() => {
         setIsProcessing(false);
         // Navegar a confirmación con datos de compra
         onNavigate('confirmation', eventId, purchase);
       }, 1500);
-      
+
     } catch (error) {
       console.error('Error en el proceso de pago:', error);
       setIsProcessing(false);
