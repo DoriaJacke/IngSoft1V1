@@ -1,112 +1,63 @@
 # Configuración del Servicio de Email
 
-Este documento explica cómo configurar el servicio de email automatizado para el envío de confirmaciones de compra.
+Este documento explica cómo configurar el servicio de email automatizado para el envío de confirmaciones de compra usando SendGrid.
 
-## Configuración de EmailJS
+## Configuración de SendGrid
 
-### 1. Crear cuenta en EmailJS
-1. Ve a [https://www.emailjs.com/](https://www.emailjs.com/)
+### 1. Crear cuenta en SendGrid
+1. Ve a [https://sendgrid.com/](https://sendgrid.com/)
 2. Regístrate o inicia sesión
 3. Una vez dentro, accede al dashboard
 
-### 2. Configurar Servicio de Email
-1. En el dashboard, ve a "Email Services"
-2. Haz clic en "Add New Service"
-3. Selecciona tu proveedor de email (Gmail, Outlook, etc.)
-4. Sigue las instrucciones para conectar tu cuenta
-5. Copia el **Service ID** generado
+### 2. Verificar tu dominio o email
+1. En el dashboard, ve a "Settings" > "Sender Authentication"
+2. Elige entre:
+   - **Single Sender Verification**: Para verificar un email individual (recomendado para pruebas)
+   - **Domain Authentication**: Para verificar un dominio completo (recomendado para producción)
+3. Sigue las instrucciones para verificar tu email o dominio
+4. El email verificado será usado como `FROM_EMAIL` en el código
 
-### 3. Crear Template de Email
-1. Ve a "Email Templates"
-2. Haz clic en "Create New Template"
-3. Usa este template HTML:
+### 3. Generar API Key
+1. Ve a "Settings" > "API Keys"
+2. Haz clic en "Create API Key"
+3. Elige "Full Access" o "Restricted Access" (asegúrate de incluir permisos de envío de email)
+4. Copia la API Key generada (solo se muestra una vez)
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-        .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { color: #6366f1; font-size: 24px; font-weight: bold; }
-        .ticket-info { background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .order-number { background-color: #6366f1; color: white; padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; }
-        .footer { margin-top: 30px; text-align: center; color: #6b7280; font-size: 14px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">EventosChile</div>
-            <h1>¡Confirmación de Compra!</h1>
-        </div>
-        
-        <p>Hola {{to_name}},</p>
-        
-        <p>¡Gracias por tu compra! Hemos recibido tu pago y confirmamos tu entrada para el siguiente evento:</p>
-        
-        <div class="ticket-info">
-            <h2>{{event_title}}</h2>
-            <p><strong>Artista:</strong> {{event_artist}}</p>
-            <p><strong>Fecha:</strong> {{event_date}}</p>
-            <p><strong>Hora:</strong> {{event_time}}</p>
-            <p><strong>Lugar:</strong> {{event_venue}}, {{event_location}}</p>
-            <p><strong>Cantidad de entradas:</strong> {{ticket_quantity}}</p>
-        </div>
-        
-        <div class="order-number">
-            <p>Número de Orden: {{order_number}}</p>
-        </div>
-        
-        <div style="margin: 20px 0;">
-            <h3>Resumen de la compra:</h3>
-            <p>Entradas ({{ticket_quantity}}): ${{unit_price}} CLP</p>
-            <p>Cargo por servicio: ${{service_charge}} CLP</p>
-            <p><strong>Total: ${{total_price}} CLP</strong></p>
-            <p>Fecha de compra: {{purchase_date}}</p>
-        </div>
-        
-        <p><strong>Instrucciones importantes:</strong></p>
-        <ul>
-            <li>Presenta este email en el evento para validar tu entrada</li>
-            <li>Llega con al menos 30 minutos de anticipación</li>
-            <li>Recuerda traer un documento de identidad válido</li>
-        </ul>
-        
-        <div class="footer">
-            <p>Si tienes alguna pregunta, contáctanos a {{support_email}}</p>
-            <p>¡Te esperamos en el evento!</p>
-            <p>Equipo EventosChile</p>
-        </div>
-    </div>
-</body>
-</html>
-```
-
-4. Configura las variables del template usando los nombres exactos del código
-5. Copia el **Template ID** generado
-
-### 4. Obtener Public Key
-1. Ve a "Account" en el menú
-2. En "General", encontrarás tu **Public Key**
-3. Cópiala
-
-### 5. Configurar las credenciales
+### 4. Configurar las credenciales
 Abre el archivo `src/services/emailService.ts` y reemplaza:
 
 ```typescript
-const EMAILJS_SERVICE_ID = 'tu_service_id_aqui';
-const EMAILJS_TEMPLATE_ID = 'tu_template_id_aqui'; 
-const EMAILJS_PUBLIC_KEY = 'tu_public_key_aqui';
+const SENDGRID_API_KEY = 'tu_api_key_de_sendgrid_aqui';
+const FROM_EMAIL = 'tu_email_verificado@ejemplo.com';
 ```
+
+### 5. Inicializar SendGrid
+En tu aplicación, llama a `initSendGrid()` al inicio:
+
+```typescript
+import { initSendGrid } from './services/emailService';
+
+// Al iniciar la app
+initSendGrid();
+```
+
+## Templates de Email
+
+Los emails se generan dinámicamente en el código usando HTML inline. Los templates incluyen:
+
+### Email de Confirmación de Compra
+- Diseño responsivo con información del evento
+- Detalles de la compra
+- Instrucciones para el usuario
+
+### Email de Recordatorio
+- Recordatorio simple del evento
+- Información básica del evento
 
 ## Variables del Template
 
-El sistema envía las siguientes variables al template:
+El sistema envía las siguientes variables:
 
-- `to_email`: Email del comprador
 - `to_name`: Nombre completo del comprador
 - `order_number`: Número de orden único
 - `event_title`: Título del evento
@@ -122,23 +73,35 @@ El sistema envía las siguientes variables al template:
 - `purchase_date`: Fecha de compra
 - `support_email`: Email de soporte
 
-## Limitaciones de EmailJS
+## Planes y Límites de SendGrid
 
-- Plan gratuito: 200 emails por mes
-- Límite de tamaño: 50KB por email
-- Para mayor volumen, considera planes pagos
-
-## Alternativas de Servicio
-
-Si necesitas mayor volumen o características avanzadas, considera:
-
-1. **SendGrid**: API robusta, planes escalables
-2. **Mailgun**: Buena para desarrolladores
-3. **AWS SES**: Económico para grandes volúmenes
-4. **Nodemailer**: Para implementación backend
+- **Free**: 100 emails por día
+- **Essentials**: $19.95/mes - 50,000 emails
+- **Pro**: $89.95/mes - 100,000 emails
+- **Premium**: Planes personalizados
 
 ## Seguridad
 
-- Las credenciales de EmailJS son seguras para uso en frontend
-- No expongas credenciales de servicios backend en el código cliente
-- Para producción, considera implementar el envío desde el backend
+⚠️ **Importante**: La API Key de SendGrid no debe exponerse en el frontend para producción.
+
+- Para desarrollo/pruebas: Puedes usar la API Key directamente
+- Para producción: Implementa el envío de emails desde el backend
+- Considera usar variables de entorno para las credenciales
+
+## Alternativas de Servicio
+
+Si necesitas otras opciones:
+
+1. **Mailgun**: Buena alternativa con API similar
+2. **AWS SES**: Económico para grandes volúmenes
+3. **Postmark**: Excelente deliverability
+4. **Nodemailer**: Para implementación backend personalizada
+
+## Testing
+
+Para probar el envío de emails:
+
+1. Configura una API Key de SendGrid
+2. Verifica un email remitente
+3. Llama a las funciones `sendPurchaseConfirmationEmail` o `sendEventReminderEmail`
+4. Revisa la consola para errores y el inbox del destinatario
