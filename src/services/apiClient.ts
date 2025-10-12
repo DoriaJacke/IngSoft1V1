@@ -5,8 +5,8 @@
 
 // Configuración base de la API
 // En desarrollo usamos el proxy de Vite (/api -> http://localhost:5001)
-// En producción apuntamos directamente al servidor
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// En producción (contenedor Docker) apuntamos directamente al puerto 5001
+const isDevelopment = import.meta.env.DEV;
 const API_BASE_URL = isDevelopment ? '/api' : 'http://localhost:5001';
 
 // Tipos para la API de reportes
@@ -300,10 +300,20 @@ export function descargarArchivo(blob: Blob, nombreArchivo: string) {
  */
 export async function verificarConexionAPI(): Promise<boolean> {
   try {
-    // En desarrollo, verificamos la conexión a través del proxy
-    const url = isDevelopment ? '/api/docs/' : `${API_BASE_URL}/docs/`;
-    const response = await fetch(url);
-    return response.ok;
+    // Intentar conectarse a la API usando la misma URL base que las peticiones
+    const url = `${API_BASE_URL}/eventos/logs`;
+    console.log(`🔍 Verificando conexión API en: ${url}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
+    const isConnected = response.ok;
+    console.log(`${isConnected ? '✅' : '❌'} Estado API: ${isConnected ? 'Conectada' : 'Desconectada'}`);
+    return isConnected;
   } catch (error) {
     console.error('❌ API no disponible:', error);
     return false;
