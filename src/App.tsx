@@ -14,11 +14,15 @@ type View = 'home' | 'event' | 'login' | 'checkout' | 'confirmation' | 'manageme
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedEventId, setSelectedEventId] = useState<string | undefined>(undefined);
+  const [purchaseData, setPurchaseData] = useState<Purchase | undefined>(undefined);
 
-  const handleNavigate = (view: string, eventId?: string) => {
+  const handleNavigate = (view: string, eventId?: string, purchase?: Purchase) => {
     setCurrentView(view as View);
     if (eventId) {
       setSelectedEventId(eventId);
+    }
+    if (purchase) {
+      setPurchaseData(purchase);
     }
   };
 
@@ -61,6 +65,7 @@ export default function App() {
           <Confirmation 
             eventId={selectedEventId}
             onNavigate={handleNavigate}
+            purchaseData={purchaseData}
           />
         )}
         
