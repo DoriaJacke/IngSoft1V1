@@ -1,25 +1,247 @@
-function generarEntradas() {
-  const SLIDES_TEMPLATE_ID = '1KDodkirVXvs0wyq5fF30f7JPWub0y8NcQ4z48Hu48pQ';
-  const DRIVE_FOLDER_ID = '15PAd0TyBRqvPdsQ_wlwozYjCUT6cGzEk';
+// Configuración
+const SPREADSHEET_ID = '108W3oHaMevCwH_Jzde5cAeRhHhRRIj5IfaE-kIWq664'; // Tu spreadsheet existente
+const SLIDES_TEMPLATE_ID = '1KDodkirVXvs0wyq5fF30f7JPWub0y8NcQ4z48Hu48pQ'; // Tu plantilla de Slides
+const DRIVE_FOLDER_ID = '15PAd0TyBRqvPdsQ_wlwozYjCUT6cGzEk'; // Tu carpeta de entradas
+const SHEET_NAME = 'Hoja 1';
+
+// Función doPost para manejar peticiones HTTP desde el frontend
+function doPost(e) {
+  // Configurar headers CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400'
+  };
+
+  // Manejar preflight request (OPTIONS)
+  if (e.parameter && e.parameter.method === 'OPTIONS') {
+    return ContentService
+      .createTextOutput('')
+      .setMimeType(ContentService.MimeType.TEXT)
+      .setHeaders(headers);
+  }
+
+  try {
+
+    // Procesar datos de compra
+    if (e.postData && e.postData.contents) {
+      const datosCompra = JSON.parse(e.postData.contents);
+
+      // Agregar compra al spreadsheet
+      const compraAgregada = agregarCompra(datosCompra);
+
+      if (compraAgregada) {
+        // Generar entrada inmediatamente
+        generarEntradaPorOrden(datosCompra.orderNumber);
+
+        // Obtener el PDF generado
+        const pdfBase64 = obtenerPdfBase64(datosCompra.orderNumber);
+
+        if (pdfBase64) {
+          return ContentService
+            .createTextOutput(JSON.stringify({
+              success: true,
+              pdfBase64: pdfBase64,
+              message: 'Entrada generada exitosamente'
+            }))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders(headers);
+        } else {
+          return ContentService
+            .createTextOutput(JSON.stringify({
+              success: false,
+              error: 'Error al obtener el PDF generado'
+            }))
+            .setMimeType(ContentService.MimeType.JSON)
+            .setHeaders(headers);
+        }
+      } else {
+        return ContentService
+          .createTextOutput(JSON.stringify({
+            success: false,
+            error: 'Error al agregar la compra'
+          }))
+          .setMimeType(ContentService.MimeType.JSON)
+          .setHeaders(headers);
+      }
+    }
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Datos no válidos'
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders(headers);
+
+  } catch (error) {
+    Logger.log('Error en doPost: ' + error.toString());
+
+    const headers = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    };
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders(headers);
+  }
+}
+
+// Función para obtener PDF en base64 por número de orden
+function obtenerPdfBase64(orderNumber) {
+  try {
+    const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    const files = folder.getFiles();
+
+    while (files.hasNext()) {
+      const file = files.next();
+      const fileName = file.getName();
+
+      // Buscar archivo que contenga el orderNumber
+      if (fileName.includes(orderNumber) && fileName.endsWith('.pdf')) {
+        const pdfBlob = file.getBlob();
+        const base64Data = Utilities.base64Encode(pdfBlob.getBytes());
+        return base64Data;
+      }
+    }
+
+    Logger.log('PDF no encontrado para orden: ' + orderNumber);
+    return null;
+
+  } catch (error) {
+    Logger.log('Error obteniendo PDF base64: ' + error.toString());
+    return null;
+  }
+}
+
+// Función para agregar una nueva compra al spreadsheet
+function agregarCompra(datosCompra) {
+  /*
+  Parámetros esperados en datosCompra:
+  {
+    nombrePersona: string,
+    email: string,
+    orderNumber: string,
+    eventTitle: string,
+    eventArtist: string,
+    eventDate: string,
+    eventTime: string,
+    eventVenue: string,
+    eventLocation: string,
+    ticketQuantity: number,
+    totalPrice: number,
+    purchaseDate: string,
+    codigoGenerado: string (QR code data)
+  }
+  */
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) {
-    SpreadsheetApp.getUi().alert("No se detectó ningún spreadsheet activo.");
+    Logger.log("No se detectó ningún spreadsheet activo.");
+    return false;
+  }
+
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    Logger.log("No se encontró la hoja '" + SHEET_NAME + "'.");
+    return false;
+  }
+
+  // Verificar si los encabezados existen, si no, crearlos
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  if (headers.length === 0 || headers[0] === "") {
+    // Crear encabezados si no existen
+    const defaultHeaders = [
+      'nombrePersona', 'email', 'orderNumber', 'eventTitle', 'eventArtist',
+      'eventDate', 'eventTime', 'eventVenue', 'eventLocation', 'ticketQuantity',
+      'totalPrice', 'purchaseDate', 'codigoGenerado', 'fecha'
+    ];
+    sheet.getRange(1, 1, 1, defaultHeaders.length).setValues([defaultHeaders]);
+  }
+
+  // Preparar fila de datos
+  const filaDatos = [
+    datosCompra.nombrePersona || '',
+    datosCompra.email || '',
+    datosCompra.orderNumber || '',
+    datosCompra.eventTitle || '',
+    datosCompra.eventArtist || '',
+    datosCompra.eventDate || '',
+    datosCompra.eventTime || '',
+    datosCompra.eventVenue || '',
+    datosCompra.eventLocation || '',
+    datosCompra.ticketQuantity || 1,
+    datosCompra.totalPrice || 0,
+    datosCompra.purchaseDate || new Date(),
+    datosCompra.codigoGenerado || '',
+    new Date() // fecha de procesamiento
+  ];
+
+  // Agregar fila al final
+  sheet.appendRow(filaDatos);
+
+  Logger.log("Compra agregada exitosamente: " + datosCompra.orderNumber);
+  return true;
+}
+
+// Función para generar entrada para una orden específica
+function generarEntradaPorOrden(orderNumber) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    Logger.log("No se detectó ningún spreadsheet activo.");
     return;
   }
 
-  const sheet = ss.getSheetByName('Hoja 1');
+  const sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
-    SpreadsheetApp.getUi().alert("No se encontró la hoja 'Hoja 1'.");
+    Logger.log("No se encontró la hoja '" + SHEET_NAME + "'.");
     return;
   }
 
   const data = sheet.getDataRange().getValues();
   if (data.length < 2) {
-    SpreadsheetApp.getUi().alert("La hoja 'Hoja 1' está vacía o no tiene encabezados.");
+    Logger.log("La hoja '" + SHEET_NAME + "' está vacía o no tiene encabezados.");
     return;
   }
 
+  const headers = data[0];
+  const columnaOrderNumber = headers.indexOf("orderNumber");
+
+  if (columnaOrderNumber < 0) {
+    Logger.log("No se encontró la columna 'orderNumber'.");
+    return;
+  }
+
+  // Buscar la fila con el orderNumber
+  let filaIndex = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][columnaOrderNumber] === orderNumber) {
+      filaIndex = i;
+      break;
+    }
+  }
+
+  if (filaIndex === -1) {
+    Logger.log("No se encontró la orden: " + orderNumber);
+    return;
+  }
+
+  // Generar entrada solo para esta fila
+  generarEntradasDesdeFilas([filaIndex + 1]); // +1 porque data incluye headers
+}
+
+// Función auxiliar para generar entradas desde filas específicas
+function generarEntradasDesdeFilas(filasIndices) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
   const template = DriveApp.getFileById(SLIDES_TEMPLATE_ID);
@@ -29,8 +251,8 @@ function generarEntradas() {
   const columnaNombre = headers.indexOf("nombrePersona");
   const columnaFecha = headers.indexOf("fecha");
 
-  for (let i = 1; i < data.length; i++) {
-    const fila = data[i];
+  filasIndices.forEach(i => {
+    const fila = data[i - 1]; // Ajustar índice
     const nombre = columnaNombre >= 0 ? fila[columnaNombre] || "SinNombre" : "SinNombre";
 
     // Crear copia de la plantilla
@@ -58,7 +280,7 @@ function generarEntradas() {
     if (columnaQR >= 0 && fila[columnaQR]) {
       try {
         const codigoGenerado = fila[columnaQR];
-        const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" 
+        const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data="
                       + encodeURIComponent(codigoGenerado);
 
         const response = UrlFetchApp.fetch(qrUrl);
@@ -88,7 +310,35 @@ function generarEntradas() {
 
     // Eliminar archivo PPT original
     DriveApp.getFileById(copia.getId()).setTrashed(true);
+  });
+}
+
+// Función original para generar todas las entradas
+function generarEntradas() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    SpreadsheetApp.getUi().alert("No se detectó ningún spreadsheet activo.");
+    return;
   }
+
+  const sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert("No se encontró la hoja '" + SHEET_NAME + "'.");
+    return;
+  }
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 2) {
+    SpreadsheetApp.getUi().alert("La hoja '" + SHEET_NAME + "' está vacía o no tiene encabezados.");
+    return;
+  }
+
+  const filasIndices = [];
+  for (let i = 1; i < data.length; i++) {
+    filasIndices.push(i + 1); // +1 porque generarEntradasDesdeFilas espera índices 1-based
+  }
+
+  generarEntradasDesdeFilas(filasIndices);
 
   SpreadsheetApp.getUi().alert("Entradas generadas correctamente en tu carpeta de Drive");
 }

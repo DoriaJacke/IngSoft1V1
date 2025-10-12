@@ -9,53 +9,102 @@
 - Joaquin Fuenzalida
 - Benjamin Vallejos
 
-## 🎯 Historia de Usuario Implementada
+# Problema
+Eventos viña: venta de entradas y verificación de entradas, evitando la duplicación y falsificación de entradas para eventos.
 
-**"Como administrador quiero ver el reporte de ventas por evento, fecha y categoría para tomar decisiones estratégicas. El sistema otorga los reportes vía PDF y Excel. El sistema puede filtrar mediante el tipo de entrada (sector)"**
+# Página de Selección de Eventos
 
-## 🚀 Ejecución Rápida
+Esta es una aplicación web para la venta de entradas de eventos que incluye un sistema automatizado de envío de emails de confirmación.
 
-### 🐳 Docker Hub (Más Fácil)
-```bash
-docker run -d -p 5001:5001 --name eventos-reportes jfuenzalida/eventos-vina-reportes:latest
+## Nuevas Funcionalidades
+
+### 🔥 Sistema de Email Automatizado
+- **Confirmación automática**: Envío de email al completar una compra
+- **Templates personalizados**: Emails con diseño profesional y toda la información del evento
+- **Estado de envío**: Seguimiento del estado del email en tiempo real
+- **Manejo de errores**: Notificación al usuario si hay problemas con el envío
+
+### 📧 Características del Email
+- Información completa del evento (título, artista, fecha, hora, lugar)
+- Número de orden único para cada compra
+- Resumen detallado de la compra con precios
+- Instrucciones para el día del evento
+- Diseño responsive y profesional
+- Contacto de soporte incluido
+
+## Configuración del Sistema de Email
+
+1. **Instalar dependencias**:
+   ```bash
+   npm install @emailjs/browser
+   ```
+
+2. **Configurar EmailJS**:
+   - Lee las instrucciones detalladas en `EMAIL_SETUP.md`
+   - Configura tu cuenta en [EmailJS](https://www.emailjs.com/)
+   - Actualiza las credenciales en `src/services/emailService.ts`
+
+3. **Ver ejemplo de email**:
+   - Abre `email-template-example.html` en tu navegador para ver cómo se ve el email
+
+## Ejecutar el proyecto
+
+1. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
+
+2. **Iniciar servidor de desarrollo**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Configurar EmailJS** (ver `EMAIL_SETUP.md` para instrucciones detalladas)
+
+## Estructura del Proyecto
+
 ```
-**Acceder a:** http://localhost:5001/docs/
-
-### 🔧 Docker Local
-```bash
-.\docker-run.ps1     # Windows
-./docker-run.sh      # Linux/Mac
+src/
+├── components/
+│   ├── Checkout.tsx          # Proceso de compra con integración de email
+│   ├── Confirmation.tsx      # Confirmación con estado del email
+│   └── ...
+├── services/
+│   └── emailService.ts       # Servicio de envío de emails
+├── types/
+│   └── index.ts             # Interfaces TypeScript actualizadas
+└── ...
 ```
 
-### 📦 Instalación Local
-```bash
-pip install -r requirements.txt
-python crear_datos_testing.py
-python app_reportes.py
-```
+## Tecnologías Utilizadas
 
-## 📊 Endpoints Principales
+- **React 18** - Framework de interfaz
+- **TypeScript** - Tipado estático
+- **Vite** - Bundler y servidor de desarrollo
+- **Tailwind CSS** - Estilos
+- **Radix UI** - Componentes de UI
+- **EmailJS** - Servicio de envío de emails
+- **Lucide React** - Iconos
 
-- **Swagger UI:** http://localhost:5001/docs/
-- **Reportes JSON:** `/reportes/ventas?formato=json`
-- **Reportes PDF:** `/reportes/ventas?formato=pdf`
-- **Reportes Excel:** `/reportes/ventas?formato=excel`
+## Flujo de Compra con Email
 
-### Filtros Disponibles:
-- `evento_id` - Por evento específico
-- `sector_id` - Por tipo de entrada
-- `fecha_inicio` / `fecha_fin` - Por rango de fechas
+1. **Selección**: Usuario selecciona evento y cantidad de entradas
+2. **Checkout**: Formulario de pago con información del comprador
+3. **Procesamiento**: Al confirmar pago:
+   - Se genera número de orden único
+   - Se envía email de confirmación automáticamente
+   - Se muestra estado del envío en tiempo real
+4. **Confirmación**: Pantalla final con estado del email y detalles de la compra
 
-## 🧪 Datos de Prueba
+## Próximas Mejoras
 
-Incluye **5 eventos** con datos completos:
-- 801 entradas vendidas
-- 318 transacciones
-- 17 sectores diferentes
-- $70,470,000 en ventas totales
+- [ ] Sistema de códigos QR en los emails
+- [ ] Recordatorios automáticos antes del evento
+- [ ] Integración con pasarelas de pago reales
+- [ ] Dashboard administrativo para gestión de emails
+- [ ] Métricas de entrega de emails
 
-## 🐳 Docker Hub
+---
 
-**Imagen:** `jfuenzalida/eventos-vina-reportes:latest`  
-**URL:** https://hub.docker.com/r/jfuenzalida/eventos-vina-reportes
+*Para más información sobre la configuración del sistema de email, consulta `EMAIL_SETUP.md`*
   
