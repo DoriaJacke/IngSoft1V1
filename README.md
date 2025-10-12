@@ -1,6 +1,9 @@
-## IngSoft1V1
+# 📊 API de Reportes - Eventos Viña
 
-# Integrantes
+**Proyecto:** IngSoft1V1  
+**Historia de Usuario:** MFLP-15 - Reportes de ventas por evento, fecha y categoría
+
+## 👥 Integrantes
 - Andres Calderon
 - Bastian Kramarenko
 - Joaquin Fuenzalida
