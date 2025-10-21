@@ -29,20 +29,22 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 - Diseño responsive y profesional
 - Contacto de soporte incluido
 
-## Configuración del Sistema de Email
+## Configuración del Sistema de Email (SendGrid)
 
-1. **Instalar dependencias**:
-   ```bash
-   npm install @emailjs/browser
-   ```
+1. Crea un archivo `.env` en la raíz con:
+   - `SENDGRID_API_KEY` (tu API key de SendGrid)
+   - `SENDGRID_FROM` (tu remitente verificado)
+   - `PORT=4000` (opcional)
 
-2. **Configurar EmailJS**:
-   - Lee las instrucciones detalladas en `EMAIL_SETUP.md`
-   - Configura tu cuenta en [EmailJS](https://www.emailjs.com/)
-   - Actualiza las credenciales en `src/services/emailService.ts`
+2. Instala dependencias y levanta los servidores:
+   - Backend (SendGrid): `npm run server`
+   - Frontend (Vite): `npm run dev`
 
-3. **Ver ejemplo de email**:
-   - Abre `email-template-example.html` en tu navegador para ver cómo se ve el email
+3. Ver ejemplo de email:
+   - Abre `email-template-example.html` para visualizar el diseño base del correo
+
+4. Documentación completa de SendGrid en el proyecto:
+   - Lee `README_SENDGRID.md`
 
 ## Ejecutar el proyecto
 
@@ -56,7 +58,7 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
    npm run dev
    ```
 
-3. **Configurar EmailJS** (ver `EMAIL_SETUP.md` para instrucciones detalladas)
+3. Envío de emails: ver `README_SENDGRID.md` para configuración completa
 
 ## Estructura del Proyecto
 
@@ -80,7 +82,7 @@ src/
 - **Vite** - Bundler y servidor de desarrollo
 - **Tailwind CSS** - Estilos
 - **Radix UI** - Componentes de UI
-- **EmailJS** - Servicio de envío de emails
+- **SendGrid (backend)** - Envío de emails con adjuntos
 - **Lucide React** - Iconos
 
 ## Flujo de Compra con Email
@@ -103,5 +105,5 @@ src/
 
 ---
 
-*Para más información sobre la configuración del sistema de email, consulta `EMAIL_SETUP.md`*
+Para más información sobre el envío con SendGrid, consulta `README_SENDGRID.md`.
   

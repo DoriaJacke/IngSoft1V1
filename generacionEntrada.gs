@@ -15,10 +15,21 @@ function doPost(e) {
   };
 
   // Manejar preflight request (OPTIONS)
-  if (e.parameter && e.parameter.method === 'OPTIONS') {
+  if (e && e.parameter && e.parameter.method === 'OPTIONS') {
     return ContentService
       .createTextOutput('')
       .setMimeType(ContentService.MimeType.TEXT)
+      .setHeaders(headers);
+  }
+
+  // Si no hay parámetro 'e', devolver error
+  if (!e) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: 'Parámetros no válidos'
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
       .setHeaders(headers);
   }
 
@@ -35,14 +46,14 @@ function doPost(e) {
         // Generar entrada inmediatamente
         generarEntradaPorOrden(datosCompra.orderNumber);
 
-        // Obtener el PDF generado
-        const pdfBase64 = obtenerPdfBase64(datosCompra.orderNumber);
+        // Obtener la URL pública del PDF generado
+        const pdfUrl = obtenerPdfUrl(datosCompra.orderNumber);
 
-        if (pdfBase64) {
+        if (pdfUrl) {
           return ContentService
             .createTextOutput(JSON.stringify({
               success: true,
-              pdfBase64: pdfBase64,
+              pdfUrl: pdfUrl,
               message: 'Entrada generada exitosamente'
             }))
             .setMimeType(ContentService.MimeType.JSON)
@@ -51,7 +62,7 @@ function doPost(e) {
           return ContentService
             .createTextOutput(JSON.stringify({
               success: false,
-              error: 'Error al obtener el PDF generado'
+              error: 'Error al obtener la URL del PDF generado'
             }))
             .setMimeType(ContentService.MimeType.JSON)
             .setHeaders(headers);
@@ -94,8 +105,8 @@ function doPost(e) {
   }
 }
 
-// Función para obtener PDF en base64 por número de orden
-function obtenerPdfBase64(orderNumber) {
+// Función para obtener URL pública del PDF por número de orden
+function obtenerPdfUrl(orderNumber) {
   try {
     const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
     const files = folder.getFiles();
@@ -106,9 +117,11 @@ function obtenerPdfBase64(orderNumber) {
 
       // Buscar archivo que contenga el orderNumber
       if (fileName.includes(orderNumber) && fileName.endsWith('.pdf')) {
-        const pdfBlob = file.getBlob();
-        const base64Data = Utilities.base64Encode(pdfBlob.getBytes());
-        return base64Data;
+        // Hacer el archivo público y obtener URL de descarga
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        const fileId = file.getId();
+        const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        return downloadUrl;
       }
     }
 
@@ -116,7 +129,7 @@ function obtenerPdfBase64(orderNumber) {
     return null;
 
   } catch (error) {
-    Logger.log('Error obteniendo PDF base64: ' + error.toString());
+    Logger.log('Error obteniendo URL del PDF: ' + error.toString());
     return null;
   }
 }

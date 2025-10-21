@@ -6,9 +6,10 @@ import { EventDetails } from './components/EventDetails';
 import { LoginRegister } from './components/LoginRegister';
 import { Checkout } from './components/Checkout';
 import { Confirmation } from './components/Confirmation';
+import TestPage from './components/TestPage';
 import { Purchase } from './types';
 
-type View = 'home' | 'event' | 'login' | 'checkout' | 'confirmation';
+type View = 'home' | 'event' | 'login' | 'checkout' | 'confirmation' | 'test';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -35,8 +36,36 @@ export default function App() {
       <div className="min-h-screen bg-background">
         <Header onNavigate={handleNavigate} />
         
+        {/* Botón de acceso rápido al test */}
+        <div style={{ 
+          position: 'fixed', 
+          top: '80px', 
+          right: '20px', 
+          zIndex: 1000 
+        }}>
+          <button
+            onClick={() => setCurrentView('test')}
+            style={{
+              backgroundColor: '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            🧪 Test Email/PDF
+          </button>
+        </div>
+        
         {currentView === 'home' && (
           <HomePage onSelectEvent={handleSelectEvent} />
+        )}
+        
+        {currentView === 'test' && (
+          <TestPage />
         )}
         
         {currentView === 'event' && selectedEventId && (
