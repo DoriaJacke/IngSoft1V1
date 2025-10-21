@@ -2,7 +2,7 @@ import { Event, User } from '../types';
 import { PurchaseDetails } from '../types/emailTypes';
 import { generateTicketPDFLocal } from './pdfService';
 import jsPDF from 'jspdf';
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 
 // Base URL del backend (SendGrid)
 const API_BASE = 'http://localhost:4000/api';

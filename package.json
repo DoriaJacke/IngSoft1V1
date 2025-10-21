@@ -1,5 +1,4 @@
-
-  {
+{
       "name": "eventos-vina-frontend",
       "version": "0.1.0",
       "private": true,
@@ -35,10 +34,15 @@
             "class-variance-authority": "^0.7.1",
             "clsx": "*",
             "cmdk": "^1.1.1",
+            "cors": "^2.8.5",
+            "dotenv": "^17.2.3",
             "embla-carousel-react": "^8.6.0",
+            "express": "^5.1.0",
             "input-otp": "^1.4.2",
+            "jspdf": "^3.0.3",
             "lucide-react": "^0.487.0",
             "next-themes": "^0.4.6",
+            "qrcode": "^1.5.4",
             "react": "^18.3.1",
             "react-day-picker": "^8.10.1",
             "react-dom": "^18.3.1",
@@ -50,16 +54,18 @@
             "vaul": "^1.1.2"
       },
       "devDependencies": {
-          "@types/node": "^20.10.0",
-          "@types/react": "^18.3.1",
-          "@types/react-dom": "^18.3.1",
-          "@vitejs/plugin-react-swc": "^3.10.2",
-          "serve": "^14.2.3",
-          "typescript": "^5.0.2",
-          "vite": "6.3.5"
+            "@types/node": "^20.10.0",
+            "@types/qrcode": "^1.5.5",
+            "@types/react": "^18.3.1",
+            "@types/react-dom": "^18.3.1",
+            "@vitejs/plugin-react-swc": "^3.10.2",
+            "serve": "^14.2.3",
+            "typescript": "^5.0.2",
+            "vite": "6.3.5"
       },
       "scripts": {
             "dev": "vite",
-            "build": "vite build"
+            "build": "vite build",
+            "server": "node server/index.js"
       }
 }
