@@ -6,11 +6,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { ArrowLeft, Minus, Plus, CreditCard, Loader2 } from 'lucide-react';
 import {
-  sendPurchaseConfirmationEmail,
   generateOrderNumber,
   formatPurchaseDate,
-  generateTicketPDF,
 } from '../services/emailService';
+import { processCompletePurchase } from '../services/databaseService';
 import { PurchaseDetails } from '../types/emailTypes';
 import { Purchase, EmailStatus } from '../types';
 
@@ -56,21 +55,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
       const totalPrice = event.price * quantity + serviceCharge;
       const purchaseDate = formatPurchaseDate();
 
-      // Crear objeto de compra
-      const purchase: Purchase = {
-        id: `purchase_${Date.now()}`,
-        orderNumber,
-        userId: user.id,
-        eventId: event.id,
-        quantity,
-        unitPrice: event.price,
-        serviceCharge,
-        totalPrice,
-        purchaseDate,
-        status: 'completed',
-        emailSent: false
-      };
-
       // Preparar datos para el email
       const purchaseDetails: PurchaseDetails = {
         orderNumber,
@@ -82,37 +66,31 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
         user
       };
 
-      // Generar entrada PDF usando jsPDF
-      console.log('Generando entrada PDF...');
-      let ticketPdfBlob: Blob | undefined;
-
-      try {
-        const ticketResult = await generateTicketPDF(purchaseDetails);
-        if (ticketResult.success && ticketResult.pdfUrl) {
-          // Obtener el Blob del PDF desde la URL
-          const response = await fetch(ticketResult.pdfUrl);
-          ticketPdfBlob = await response.blob();
-          console.log('Entrada PDF generada exitosamente');
-        } else {
-          console.warn('No se pudo generar la entrada PDF:', ticketResult.message);
-        }
-      } catch (error) {
-        console.warn('Error al generar PDF - continuando sin attachment:', error);
-        // Continuar sin PDF - el email se enviará normalmente
+      // Procesar compra completa con SQLAlchemy
+      console.log('🛒 Procesando compra con base de datos SQLAlchemy...');
+      
+      const purchaseResult = await processCompletePurchase(purchaseDetails);
+      
+      if (!purchaseResult.success) {
+        throw new Error(purchaseResult.message);
       }
 
-      // Enviar email de confirmación con PDF adjunto
-      const emailResult = await sendPurchaseConfirmationEmail(purchaseDetails, ticketPdfBlob);
+      console.log('✅ Compra procesada exitosamente:', purchaseResult.orderNumber);
 
-      // Actualizar estado del email
-      setEmailStatus({
-        sent: emailResult.success,
-        sentAt: emailResult.success ? new Date().toISOString() : undefined,
-        error: emailResult.success ? undefined : emailResult.message
-      });
-
-      // Actualizar el estado de la compra
-      purchase.emailSent = emailResult.success;
+      // Crear objeto purchase para compatibilidad con el frontend
+      const purchase: Purchase = {
+        id: purchaseResult.purchaseId?.toString() || `purchase_${Date.now()}`,
+        orderNumber: purchaseResult.orderNumber || orderNumber,
+        userId: user.id,
+        eventId: event.id,
+        quantity,
+        unitPrice: event.price,
+        serviceCharge,
+        totalPrice,
+        purchaseDate,
+        status: 'completed',
+        emailSent: true // Ya se envió en processCompletePurchase
+      };
 
       // Simular proceso de pago exitoso
       setTimeout(() => {
