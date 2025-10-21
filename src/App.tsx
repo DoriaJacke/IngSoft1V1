@@ -7,9 +7,11 @@ import { LoginRegister } from './components/LoginRegister';
 import { Checkout } from './components/Checkout';
 import { Confirmation } from './components/Confirmation';
 import TestPage from './components/TestPage';
+import { EventManagement } from './components/EventManagementSimple';
+import { ReportsSimple as Reports } from './components/ReportsSimple';
 import { Purchase } from './types';
 
-type View = 'home' | 'event' | 'login' | 'checkout' | 'confirmation' | 'test';
+type View = 'home' | 'event' | 'login' | 'checkout' | 'confirmation' | 'test' | 'management' | 'reports';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('home');
@@ -95,6 +97,14 @@ export default function App() {
             onNavigate={handleNavigate}
             purchaseData={purchaseData}
           />
+        )}
+        
+        {currentView === 'management' && (
+          <EventManagement onNavigate={handleNavigate} />
+        )}
+        
+        {currentView === 'reports' && (
+          <Reports onNavigate={handleNavigate} />
         )}
       </div>
     </AuthProvider>
