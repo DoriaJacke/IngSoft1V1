@@ -9,10 +9,9 @@ import {
   sendPurchaseConfirmationEmail,
   generateOrderNumber,
   formatPurchaseDate,
-  initEmailJS,
   generateTicketPDF,
-  PurchaseDetails
 } from '../services/emailService';
+import { PurchaseDetails } from '../types/emailTypes';
 import { Purchase, EmailStatus } from '../types';
 
 interface CheckoutProps {
@@ -51,9 +50,6 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
     setIsProcessing(true);
 
     try {
-      // Inicializar EmailJS
-      initEmailJS();
-
       // Generar datos de compra
       const orderNumber = generateOrderNumber();
       const serviceCharge = quantity * 500;
@@ -86,25 +82,27 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
         user
       };
 
-      // Intentar generar entrada PDF usando Google Apps Script
+      // Generar entrada PDF usando jsPDF
       console.log('Generando entrada PDF...');
-      let ticketPdfBase64: string | undefined;
+      let ticketPdfBlob: Blob | undefined;
 
       try {
         const ticketResult = await generateTicketPDF(purchaseDetails);
-        if (ticketResult.success && ticketResult.pdfBase64) {
-          ticketPdfBase64 = ticketResult.pdfBase64;
+        if (ticketResult.success && ticketResult.pdfUrl) {
+          // Obtener el Blob del PDF desde la URL
+          const response = await fetch(ticketResult.pdfUrl);
+          ticketPdfBlob = await response.blob();
           console.log('Entrada PDF generada exitosamente');
         } else {
           console.warn('No se pudo generar la entrada PDF:', ticketResult.message);
         }
       } catch (error) {
-        console.warn('Error de CORS al generar PDF - continuando sin adjunto:', error);
+        console.warn('Error al generar PDF - continuando sin attachment:', error);
         // Continuar sin PDF - el email se enviará normalmente
       }
 
-      // Enviar email de confirmación (con o sin adjunto PDF)
-      const emailResult = await sendPurchaseConfirmationEmail(purchaseDetails, ticketPdfBase64);
+      // Enviar email de confirmación con PDF adjunto
+      const emailResult = await sendPurchaseConfirmationEmail(purchaseDetails, ticketPdfBlob);
 
       // Actualizar estado del email
       setEmailStatus({
