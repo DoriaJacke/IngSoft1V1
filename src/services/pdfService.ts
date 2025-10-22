@@ -6,8 +6,11 @@ export const generateTicketPDFLocal = async (
   purchaseDetails: PurchaseDetails
 ): Promise<PDFResult> => {
   try {
-    // Generar código QR único para la entrada
-    const qrCodeData = `ORD:${purchaseDetails.orderNumber}:USER:${purchaseDetails.user.email}:QTY:${purchaseDetails.quantity}`;
+    // Generar QR solo con RUT (privacidad). Si no hay RUT, usar marcador.
+    const normalizeRut = (s: string) => s.replace(/\.|-/g, '').toUpperCase();
+    const qrCodeData = purchaseDetails.user && purchaseDetails.user.rut
+      ? normalizeRut(purchaseDetails.user.rut)
+      : 'RUT-NO-DISPONIBLE';
 
     // Crear nuevo documento PDF con compresión
     const pdf = new jsPDF({

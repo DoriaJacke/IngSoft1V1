@@ -16,12 +16,50 @@ Eventos viña: venta de entradas y verificación de entradas, evitando la duplic
 
 Esta es una aplicación web para la venta de entradas de eventos que incluye un sistema automatizado de envío de emails de confirmación.
 
-## Nuevas Funcionalidades
+## 🎯 Historias de Usuario Implementadas
 
-### 🔥 Sistema de Email Automatizado
+### Sistema de Email con SendGrid
+**"Como comprador quiero recibir un email de confirmación con mi entrada en PDF para tener comprobante de mi compra"**
+
+### Sistema de Reportes
+**"Como administrador quiero ver el reporte de ventas por evento, fecha y categoría para tomar decisiones estratégicas. El sistema otorga los reportes vía PDF y Excel. El sistema puede filtrar mediante el tipo de entrada (sector)"**
+
+## 🚀 Ejecución Rápida
+
+### Frontend (Venta de Entradas + Email)
+```bash
+npm install
+npm run dev        # Frontend en http://localhost:5173
+npm run server     # Backend SendGrid en http://localhost:4000
+```
+
+### Backend (Reportes - Docker Hub)
+```bash
+docker run -d -p 5001:5001 --name eventos-reportes jfuenzalida/eventos-vina-reportes:latest
+```
+**Acceder a:** http://localhost:5001/docs/
+
+### Backend (Reportes - Docker Local)
+```bash
+.\docker-run.ps1     # Windows
+./docker-run.sh      # Linux/Mac
+```
+
+### Backend (Reportes - Instalación Local)
+```bash
+pip install -r requirements.txt
+python crear_datos_testing.py
+python app_reportes.py
+```
+
+## 📧 Sistema de Email con SendGrid
+
+### Funcionalidades
 - **Confirmación automática**: Envío de email al completar una compra
-- **Templates personalizados**: Emails con diseño profesional y toda la información del evento
+- **PDF adjunto**: Entrada digital con código QR único
+- **Templates personalizados**: Emails con diseño profesional
 - **Estado de envío**: Seguimiento del estado del email en tiempo real
+<<<<<<< Updated upstream
 - **Manejo de errores**: Notificación al usuario si hay problemas con el envío
 
 ### 📧 Características del Email
@@ -52,59 +90,81 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 1. **Instalar dependencias**:
    ```bash
    npm install
+=======
+
+### Configuración
+1. Crea un archivo `.env` en la raíz con:
+   ```
+   SENDGRID_API_KEY=tu_api_key
+   SENDGRID_FROM=tu_email_verificado@ejemplo.com
+   PORT=4000
+>>>>>>> Stashed changes
    ```
 
-2. **Iniciar servidor de desarrollo**:
-   ```bash
-   npm run dev
-   ```
+2. Documentación completa: `README_SENDGRID.md`
 
+<<<<<<< Updated upstream
 3. **Configurar EmailJS** (ver `EMAIL_SETUP.md` para instrucciones detalladas)
+=======
+## 📊 Sistema de Reportes (API)
+>>>>>>> Stashed changes
 
-## Estructura del Proyecto
+### Endpoints Principales
+- **Swagger UI:** http://localhost:5001/docs/
+- **Reportes JSON:** `/reportes/ventas?formato=json`
+- **Reportes PDF:** `/reportes/ventas?formato=pdf`
+- **Reportes Excel:** `/reportes/ventas?formato=excel`
 
-```
-src/
-├── components/
-│   ├── Checkout.tsx          # Proceso de compra con integración de email
-│   ├── Confirmation.tsx      # Confirmación con estado del email
-│   └── ...
-├── services/
-│   └── emailService.ts       # Servicio de envío de emails
-├── types/
-│   └── index.ts             # Interfaces TypeScript actualizadas
-└── ...
-```
+### Filtros Disponibles:
+- `evento_id` - Por evento específico
+- `sector_id` - Por tipo de entrada
+- `fecha_inicio` / `fecha_fin` - Por rango de fechas
 
-## Tecnologías Utilizadas
+### Datos de Prueba
+- 801 entradas vendidas
+- 318 transacciones
+- 17 sectores diferentes
+- $70,470,000 en ventas totales
 
+## 🛠 Tecnologías Utilizadas
+
+### Frontend
 - **React 18** - Framework de interfaz
 - **TypeScript** - Tipado estático
 - **Vite** - Bundler y servidor de desarrollo
 - **Tailwind CSS** - Estilos
 - **Radix UI** - Componentes de UI
+<<<<<<< Updated upstream
 - **EmailJS** - Servicio de envío de emails
+=======
+>>>>>>> Stashed changes
 - **Lucide React** - Iconos
 
-## Flujo de Compra con Email
+### Backend Email
+- **Node.js + Express** - Servidor backend
+- **SendGrid** - Envío de emails con adjuntos
+- **jsPDF** - Generación de PDFs
+- **QRCode** - Códigos QR únicos
 
-1. **Selección**: Usuario selecciona evento y cantidad de entradas
-2. **Checkout**: Formulario de pago con información del comprador
-3. **Procesamiento**: Al confirmar pago:
-   - Se genera número de orden único
-   - Se envía email de confirmación automáticamente
-   - Se muestra estado del envío en tiempo real
-4. **Confirmación**: Pantalla final con estado del email y detalles de la compra
+### Backend Reportes
+- **Python + Flask** - API REST
+- **SQLite** - Base de datos
+- **ReportLab** - Generación de PDFs
+- **OpenPyXL** - Exportación a Excel
+- **Docker** - Containerización
 
-## Próximas Mejoras
+## 🐳 Docker Hub
 
-- [ ] Sistema de códigos QR en los emails
-- [ ] Recordatorios automáticos antes del evento
-- [ ] Integración con pasarelas de pago reales
-- [ ] Dashboard administrativo para gestión de emails
-- [ ] Métricas de entrega de emails
+**Imagen Reportes:** `jfuenzalida/eventos-vina-reportes:latest`  
+**URL:** https://hub.docker.com/r/jfuenzalida/eventos-vina-reportes
 
 ---
 
+<<<<<<< Updated upstream
 *Para más información sobre la configuración del sistema de email, consulta `EMAIL_SETUP.md`*
+=======
+**Documentación detallada:**
+- Email con SendGrid: `README_SENDGRID.md`
+- Reportes API: `RESUMEN_PROYECTO.md`
+>>>>>>> Stashed changes
   

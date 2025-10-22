@@ -18,6 +18,8 @@ export interface User {
   email: string;
   name: string;
   lastName: string;
+  // Chilean national ID (RUT), normalized as XXXXXXXX-K (optional for legacy users)
+  rut?: string;
   isAdmin?: boolean;
 }
 

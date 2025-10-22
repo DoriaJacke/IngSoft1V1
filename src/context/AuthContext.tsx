@@ -5,7 +5,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => boolean;
   loginAdmin: (email: string) => boolean;
-  register: (email: string, password: string, name: string, lastName: string) => boolean;
+  register: (email: string, password: string, name: string, lastName: string, rut: string) => boolean;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -26,7 +26,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           id: foundUser.id,
           email: foundUser.email,
           name: foundUser.name,
-          lastName: foundUser.lastName
+          lastName: foundUser.lastName,
+          rut: foundUser.rut
         });
         return true;
       }
@@ -39,7 +40,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         email,
         password,
         name: email.split('@')[0], // Usar parte del email como nombre
-        lastName: 'Usuario'
+        lastName: 'Usuario',
+        rut: ''
       };
 
       const users = storedUsers ? JSON.parse(storedUsers) : [];
@@ -50,7 +52,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         id: newUser.id,
         email: newUser.email,
         name: newUser.name,
-        lastName: newUser.lastName
+        lastName: newUser.lastName,
+        rut: newUser.rut
       });
       return true;
     }
@@ -70,7 +73,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return true;
   };
 
-  const register = (email: string, password: string, name: string, lastName: string): boolean => {
+  const register = (email: string, password: string, name: string, lastName: string, rut: string): boolean => {
     const storedUsers = localStorage.getItem('users');
     const users = storedUsers ? JSON.parse(storedUsers) : [];
     
@@ -85,7 +88,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       email,
       password,
       name,
-      lastName
+      lastName,
+      rut
     };
 
     users.push(newUser);
@@ -95,7 +99,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: newUser.id,
       email: newUser.email,
       name: newUser.name,
-      lastName: newUser.lastName
+      lastName: newUser.lastName,
+      rut: newUser.rut
     });
     return true;
   };

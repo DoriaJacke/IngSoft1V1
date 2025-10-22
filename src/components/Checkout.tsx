@@ -138,6 +138,10 @@ export const Checkout: React.FC<CheckoutProps> = ({ eventId, onNavigate }) => {
                   <Label>Apellido</Label>
                   <Input value={user?.lastName} disabled className="mt-1" />
                 </div>
+                <div>
+                  <Label>RUT</Label>
+                  <Input value={user?.rut || ''} disabled className="mt-1" />
+                </div>
                 <div className="col-span-2">
                   <Label>Email</Label>
                   <Input value={user?.email} disabled className="mt-1" />

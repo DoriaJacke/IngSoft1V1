@@ -24,6 +24,32 @@ export const LoginRegister: React.FC<LoginRegisterProps> = ({ onNavigate, return
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerName, setRegisterName] = useState('');
   const [registerLastName, setRegisterLastName] = useState('');
+  const [registerRut, setRegisterRut] = useState('');
+
+  // Normaliza y valida RUT chileno (formato XXXXXXXX-K)
+  const normalizeRut = (rut: string) => {
+    const clean = rut.replace(/\.|-/g, '').toUpperCase();
+    if (!clean) return '';
+    const body = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+    return `${body}-${dv}`;
+  };
+
+  const validateRut = (rut: string) => {
+    const clean = rut.replace(/\.|-/g, '').toUpperCase();
+    if (!/^\d{7,8}[0-9K]$/.test(clean)) return false;
+    const body = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+    let sum = 0;
+    let multiplier = 2;
+    for (let i = body.length - 1; i >= 0; i--) {
+      sum += parseInt(body[i], 10) * multiplier;
+      multiplier = multiplier === 7 ? 2 : multiplier + 1;
+    }
+    const mod11 = 11 - (sum % 11);
+    const dvCalc = mod11 === 11 ? '0' : mod11 === 10 ? 'K' : String(mod11);
+    return dv === dvCalc;
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,12 +82,18 @@ export const LoginRegister: React.FC<LoginRegisterProps> = ({ onNavigate, return
     e.preventDefault();
     setError('');
     
-    if (!registerEmail || !registerPassword || !registerName || !registerLastName) {
+    if (!registerEmail || !registerPassword || !registerName || !registerLastName || !registerRut) {
       setError('Todos los campos son obligatorios');
       return;
     }
+
+    const rutNorm = normalizeRut(registerRut);
+    if (!validateRut(rutNorm)) {
+      setError('RUT inválido. Ejemplo válido: 12345678-5');
+      return;
+    }
     
-    const success = register(registerEmail, registerPassword, registerName, registerLastName);
+  const success = register(registerEmail, registerPassword, registerName, registerLastName, rutNorm);
     if (success) {
       // Si había un evento seleccionado, ir a checkout
       if (returnEventId) {
@@ -206,6 +238,19 @@ export const LoginRegister: React.FC<LoginRegisterProps> = ({ onNavigate, return
                   type="email"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
+                  required
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="register-rut">RUT</Label>
+                <Input
+                  id="register-rut"
+                  type="text"
+                  placeholder="12345678-5"
+                  value={registerRut}
+                  onChange={(e) => setRegisterRut(e.target.value)}
                   required
                   className="mt-1"
                 />
