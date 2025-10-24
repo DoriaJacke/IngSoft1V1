@@ -754,7 +754,11 @@ export const formatPurchaseDate = (): string => {
 export const generateTicketPDF = async (purchaseDetails: PurchaseDetails): Promise<{ success: boolean; pdfUrl?: string; message: string }> => {
   try {
     // Generar código QR único para la entrada
-    const qrCodeData = `ORD:${purchaseDetails.orderNumber}:USER:${purchaseDetails.user.email}:QTY:${purchaseDetails.quantity}`;
+    // QR solo con RUT (privacidad): si no hay RUT, colocar marcador
+    const normalizeRut = (s: string) => s.replace(/\.|-/g, '').toUpperCase();
+    const qrCodeData = purchaseDetails.user && purchaseDetails.user.rut
+      ? normalizeRut(purchaseDetails.user.rut)
+      : 'RUT-NO-DISPONIBLE';
 
     // Crear nuevo documento PDF con compresión
     const pdf = new jsPDF({
@@ -801,13 +805,15 @@ export const generateTicketPDF = async (purchaseDetails: PurchaseDetails): Promi
     pdf.text(`Nombre: ${purchaseDetails.user.name} ${purchaseDetails.user.lastName}`, 20, 150);
     pdf.text(`Email: ${purchaseDetails.user.email}`, 20, 160);
     pdf.text(`Cantidad de entradas: ${purchaseDetails.quantity}`, 20, 170);
+    // Ya no imprimimos el RUT en el ticket para proteger datos personales
 
     // Número de orden
     pdf.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    pdf.rect(20, 180, 170, 15, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(`NÚMERO DE ORDEN: ${purchaseDetails.orderNumber}`, 105, 190, { align: 'center' });
+  const orderBlockTop = 180; // fijo, ya que no hay línea adicional de RUT
+  pdf.rect(20, orderBlockTop, 170, 15, 'F');
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`NÚMERO DE ORDEN: ${purchaseDetails.orderNumber}`, 105, orderBlockTop + 10, { align: 'center' });
 
     // Generar y agregar código QR
     try {
@@ -821,7 +827,7 @@ export const generateTicketPDF = async (purchaseDetails: PurchaseDetails): Promi
       });
 
       // Agregar QR al PDF (tamaño reducido)
-      pdf.addImage(qrCodeDataURL, 'PNG', 150, 210, 30, 30); // Reducido de 40x40 a 30x30
+  pdf.addImage(qrCodeDataURL, 'PNG', 150, 210, 30, 30); // Reducido de 40x40 a 30x30
 
       // Texto explicativo del QR
       pdf.setTextColor(0, 0, 0);
