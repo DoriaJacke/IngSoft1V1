@@ -21,4 +21,5 @@ export interface PDFResult {
   message: string;
   pdfUrl?: string;
   pdfBlob?: Blob;
+  pdfBase64?: string;
 }

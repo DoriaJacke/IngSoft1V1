@@ -4,8 +4,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Badge } from '../ui/badge';
-import { Plus, Trash2, RefreshCw, Calendar, Clock, MapPin, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Calendar, Clock, MapPin, AlertCircle, ScanLine } from 'lucide-react';
 import { eventosService, type EventoLog, type EventoRequest, verificarConexionAPI } from '../../services/apiClient';
+import { QRValidation } from './QRValidation';
 
 interface EventManagementProps {
   onNavigate: (view: string) => void;
@@ -17,6 +18,7 @@ export function EventManagement({ onNavigate }: EventManagementProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
+  const [showValidation, setShowValidation] = useState(false);
   
   // Estados para el formulario
   const [showAddForm, setShowAddForm] = useState(false);
@@ -175,24 +177,50 @@ export function EventManagement({ onNavigate }: EventManagementProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="outline"
-            onClick={() => onNavigate('home')}
-            className="mb-4"
-          >
-            ← Volver al inicio
-          </Button>
-          
-          <h1 className="text-3xl font-bold mb-2">Gestión de Eventos</h1>
-          <p className="text-gray-600">
-            Administra los eventos del sistema. Agrega nuevos eventos o elimina existentes.
-          </p>
-        </div>
+        {/* Mostrar componente de validación si está activo */}
+        {showValidation ? (
+          <div>
+            <Button
+              variant="outline"
+              onClick={() => setShowValidation(false)}
+              className="mb-4"
+            >
+              ← Volver a Gestión de Eventos
+            </Button>
+            <QRValidation />
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="mb-8">
+              <Button
+                variant="outline"
+                onClick={() => onNavigate('home')}
+                className="mb-4"
+              >
+                ← Volver al inicio
+              </Button>
+              
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">Gestión de Eventos</h1>
+                  <p className="text-gray-600">
+                    Administra los eventos del sistema. Agrega nuevos eventos o elimina existentes.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setShowValidation(true)}
+                  size="lg"
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  <ScanLine className="w-5 h-5 mr-2" />
+                  Validar Entradas
+                </Button>
+              </div>
+            </div>
 
-        {/* Estado de conexión */}
-        <ConnectionStatus />
+            {/* Estado de conexión */}
+            <ConnectionStatus />
 
         {/* Mensajes de estado */}
         {error && (
@@ -386,7 +414,8 @@ export function EventManagement({ onNavigate }: EventManagementProps) {
               </div>
             </CardContent>
           </Card>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

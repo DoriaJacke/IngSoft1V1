@@ -1,14 +1,17 @@
 import { PurchaseDetails, EmailResult } from '../types/emailTypes';
+import { generateTicketPDFLocal } from './pdfService';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 const NODE_API_URL = 'http://localhost:4000/api';
 
-// Servicio para manejar usuarios
+// Servicio para manejar usuarios (modo offline con localStorage como fallback)
 export const userService = {
   async createOrGetUser(userData: { email: string; name: string; lastName: string }) {
     try {
-      // Primero intentar obtener el usuario por email
-      const response = await fetch(`${API_BASE_URL}/users/email/${encodeURIComponent(userData.email)}`);
+      // Intentar conectar al backend si está disponible
+      const response = await fetch(`${API_BASE_URL}/users/email/${encodeURIComponent(userData.email)}`, {
+        signal: AbortSignal.timeout(2000) // 2 segundos timeout
+      });
       
       if (response.ok) {
         const result = await response.json();
@@ -22,6 +25,7 @@ export const userService = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
+        signal: AbortSignal.timeout(2000)
       });
       
       if (!createResponse.ok) {
@@ -31,8 +35,18 @@ export const userService = {
       const createResult = await createResponse.json();
       return createResult.user;
     } catch (error) {
-      console.error('Error en userService:', error);
-      throw error;
+      // Si falla el backend, usar localStorage (modo offline)
+      console.warn('Backend no disponible, usando modo offline:', error);
+      
+      // Generar ID único basado en email
+      const userId = Math.abs(userData.email.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0));
+      
+      return {
+        id: userId,
+        email: userData.email,
+        name: userData.name,
+        lastName: userData.lastName
+      };
     }
   },
 
@@ -53,7 +67,7 @@ export const userService = {
   }
 };
 
-// Servicio para manejar compras
+// Servicio para manejar compras (con fallback a localStorage)
 export const purchaseService = {
   async createPurchase(purchaseData: {
     userId: number;
@@ -70,6 +84,7 @@ export const purchaseService = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(purchaseData),
+        signal: AbortSignal.timeout(2000)
       });
       
       if (!response.ok) {
@@ -80,8 +95,43 @@ export const purchaseService = {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Error creando compra:', error);
-      throw error;
+      // Si falla el backend, usar localStorage
+      console.warn('Backend no disponible, usando modo offline para compra:', error);
+      
+      const purchaseId = Date.now();
+      const orderNumber = `ORD-${purchaseId}`;
+      
+      // Guardar en localStorage
+      const purchases = JSON.parse(localStorage.getItem('purchases') || '[]');
+      const newPurchase = {
+        id: purchaseId,
+        orderNumber,
+        ...purchaseData,
+        status: 'completed',
+        purchaseDate: new Date().toISOString(),
+        emailSent: false
+      };
+      purchases.push(newPurchase);
+      localStorage.setItem('purchases', JSON.stringify(purchases));
+      
+      // Retornar en el mismo formato que el backend
+      return {
+        success: true,
+        message: 'Compra creada exitosamente (modo offline)',
+        purchase: {
+          id: purchaseId,
+          orderNumber,
+          userId: purchaseData.userId,
+          eventId: purchaseData.eventId,
+          quantity: purchaseData.quantity,
+          unitPrice: purchaseData.unitPrice,
+          serviceCharge: purchaseData.serviceCharge,
+          totalPrice: purchaseData.totalPrice,
+          status: 'completed',
+          purchaseDate: new Date().toISOString(),
+          emailSent: false
+        }
+      };
     }
   },
 
@@ -114,6 +164,7 @@ export const purchaseService = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(emailData),
+        signal: AbortSignal.timeout(2000)
       });
       
       if (!response.ok) {
@@ -123,8 +174,25 @@ export const purchaseService = {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Error actualizando email status:', error);
-      throw error;
+      // Si falla el backend, actualizar en localStorage
+      console.warn('Backend no disponible, actualizando email status en localStorage:', error);
+      
+      const purchases = JSON.parse(localStorage.getItem('purchases') || '[]');
+      const purchaseIndex = purchases.findIndex((p: any) => p.id === purchaseId);
+      
+      if (purchaseIndex !== -1) {
+        purchases[purchaseIndex] = {
+          ...purchases[purchaseIndex],
+          ...emailData,
+          lastUpdated: new Date().toISOString()
+        };
+        localStorage.setItem('purchases', JSON.stringify(purchases));
+      }
+      
+      return {
+        success: true,
+        message: 'Email status actualizado (modo offline)'
+      };
     }
   }
 };
@@ -267,6 +335,14 @@ const sendPurchaseConfirmationEmailViaNodeAPI = async (
       purchase_date: purchaseDetails.purchaseDate
     });
     
+    // Generar PDF de la entrada
+    console.log('📄 Generando PDF de entrada...');
+    const pdfResult = await generateTicketPDFLocal(purchaseDetails);
+    
+    if (!pdfResult.success || !pdfResult.pdfBase64) {
+      console.warn('⚠️ No se pudo generar PDF, enviando email sin adjunto');
+    }
+    
     // Enviar email usando la API de Node.js existente
     const response = await fetch(`${NODE_API_URL}/send-confirmation`, {
       method: 'POST',
@@ -277,7 +353,9 @@ const sendPurchaseConfirmationEmailViaNodeAPI = async (
         toEmail: purchaseDetails.user.email,
         toName: purchaseDetails.user.name,
         subject: 'Confirmación de compra - Eventos Viña',
-        html: emailHTML
+        html: emailHTML,
+        pdfBase64: pdfResult.success ? pdfResult.pdfBase64 : undefined,
+        pdfFilename: pdfResult.success ? `entrada-${purchaseDetails.orderNumber}.pdf` : undefined
       }),
     });
     

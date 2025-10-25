@@ -22,6 +22,9 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 ### Sistema de Reportes
 **"Como administrador quiero ver el reporte de ventas por evento, fecha y categoría para tomar decisiones estratégicas. El sistema otorga los reportes vía PDF y Excel. El sistema puede filtrar mediante el tipo de entrada (sector)"**
 
+### Sistema de Validación de Entradas
+**"Como personal de seguridad quiero validar entradas comparando el RUT del QR de la entrada con el RUT del carnet de identidad para evitar falsificaciones y duplicaciones"**
+
 ## 🚀 Ejecución Rápida
 
 ### Frontend (Venta de Entradas + Email)
@@ -101,11 +104,39 @@ python app_reportes.py
 
 2. Documentación completa: `README_SENDGRID.md`
 
-<<<<<<< Updated upstream
-3. **Configurar EmailJS** (ver `EMAIL_SETUP.md` para instrucciones detalladas)
-=======
+## 🔐 Sistema de Validación de Entradas
+
+### Funcionalidades
+- **Escaneo QR dual**: Escanea entrada y carnet de identidad
+- **Comparación de RUT**: Valida que el RUT de la entrada coincida con el del carnet
+- **Detección automática**: Reconoce múltiples formatos de QR de carnets chilenos
+- **Historial**: Registro de todas las validaciones del día
+- **Estadísticas en tiempo real**: Contador de entradas válidas/inválidas
+- **Interfaz móvil**: Optimizada para tablets y smartphones
+
+### Cómo Usar (Personal de Puerta)
+
+1. **Acceder al sistema**:
+   - Ir a la vista de administrador
+   - Click en botón "Validar Entradas"
+
+2. **Proceso de validación**:
+   - **Paso 1**: Escanear QR de la entrada del evento
+   - **Paso 2**: Escanear QR del carnet de identidad
+   - **Resultado**: ✅ Válido o ❌ Inválido (automático)
+
+3. **Formatos soportados**:
+   - Entrada: QR con RUT normalizado
+   - Carnet: Formato cédula chilena (PDF417, texto, etc.)
+
+### Características Técnicas
+- ✅ Normalización de RUTs (ignora puntos, guiones, mayúsculas)
+- ✅ Validación de dígito verificador
+- ✅ Soporte offline (datos en localStorage)
+- ✅ Feedback visual y sonoro
+- ✅ Compatible con múltiples formatos de carnet
+
 ## 📊 Sistema de Reportes (API)
->>>>>>> Stashed changes
 
 ### Endpoints Principales
 - **Swagger UI:** http://localhost:5001/docs/
@@ -132,11 +163,8 @@ python app_reportes.py
 - **Vite** - Bundler y servidor de desarrollo
 - **Tailwind CSS** - Estilos
 - **Radix UI** - Componentes de UI
-<<<<<<< Updated upstream
-- **EmailJS** - Servicio de envío de emails
-=======
->>>>>>> Stashed changes
 - **Lucide React** - Iconos
+- **html5-qrcode** - Escaneo de códigos QR
 
 ### Backend Email
 - **Node.js + Express** - Servidor backend
@@ -158,12 +186,10 @@ python app_reportes.py
 
 ---
 
-<<<<<<< Updated upstream
-*Para más información sobre la configuración del sistema de email, consulta `EMAIL_SETUP.md`*
-=======
 **Documentación detallada:**
 - Email con SendGrid: `README_SENDGRID.md`
 - Reportes API: `RESUMEN_PROYECTO.md`
+- Validación de Entradas: Incluida en panel de administrador
 >>>>>>> Stashed changes
   
 
