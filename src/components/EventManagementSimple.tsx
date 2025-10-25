@@ -5,6 +5,7 @@ import {
   type EventoRequest, 
   verificarConexionAPI 
 } from '../services/apiClient';
+import { QRValidation } from './QRValidation';
 
 interface EventManagementProps {
   onNavigate: (view: string) => void;
@@ -17,6 +18,7 @@ export function EventManagement({ onNavigate }: EventManagementProps) {
   const [success, setSuccess] = useState<string | null>(null);
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [showValidation, setShowValidation] = useState(false);
   
   // Estados para el formulario
   const [showAddForm, setShowAddForm] = useState(false);
@@ -153,65 +155,117 @@ export function EventManagement({ onNavigate }: EventManagementProps) {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      {/* Header */}
-      <div className="mb-8">
-        <button
-          onClick={() => onNavigate('home')}
-          className="mb-4 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-        >
-          ← Volver al inicio
-        </button>
-        
-        <h1 className="text-3xl font-bold mb-2">Gestión de Eventos</h1>
-        <p className="text-gray-600">
-          Administra los eventos del sistema. Agrega nuevos eventos o elimina existentes.
-        </p>
-      </div>
-
-      {/* Estado de conexión */}
-      <div className={`flex items-center gap-2 p-3 rounded-md mb-4 ${
-        apiConnected === true 
-          ? 'bg-green-50 text-green-700 border border-green-200' 
-          : apiConnected === false 
-          ? 'bg-red-50 text-red-700 border border-red-200'
-          : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-      }`}>
-        <div className={`w-2 h-2 rounded-full ${
-          apiConnected === true 
-            ? 'bg-green-500' 
-            : apiConnected === false 
-            ? 'bg-red-500'
-            : 'bg-yellow-500'
-        }`} />
-        <span className="text-sm font-medium">
-          {apiConnected === true && '🟢 API Conectada'}
-          {apiConnected === false && '🔴 API Desconectada'}
-          {apiConnected === null && '🟡 Verificando API...'}
-        </span>
-        {apiConnected === false && (
-          <button 
-            onClick={checkApiConnection}
-            className="ml-auto px-3 py-1 text-xs border border-gray-300 rounded"
+      {/* Mostrar componente de validación si está activo */}
+      {showValidation ? (
+        <div>
+          <button
+            onClick={() => setShowValidation(false)}
+            className="mb-4 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            🔄 Reconectar
+            ← Volver a Gestión de Eventos
           </button>
-        )}
-      </div>
-
-      {/* Mensajes de estado */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
-          ⚠️ {error}
+          <QRValidation />
         </div>
-      )}
-      
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md mb-4">
-          {success}
-        </div>
-      )}
+      ) : (
+        <>
+          {/* Header */}
+          <div className="mb-8">
+            <button
+              onClick={() => onNavigate('home')}
+              className="mb-4 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              ← Volver al inicio
+            </button>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Gestión de Eventos</h1>
+                <p className="text-gray-600">
+                  Administra los eventos del sistema. Agrega nuevos eventos o elimina existentes.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowValidation(true)}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#9333ea',
+                  color: 'white',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#7e22ce'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#9333ea'}
+              >
+                <svg 
+                  style={{ width: '20px', height: '20px' }} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" 
+                  />
+                </svg>
+                <span>Validar Entradas</span>
+              </button>
+            </div>
+          </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+          {/* Estado de conexión */}
+          <div className={`flex items-center gap-2 p-3 rounded-md mb-4 ${
+            apiConnected === true 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : apiConnected === false 
+              ? 'bg-red-50 text-red-700 border border-red-200'
+              : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              apiConnected === true 
+                ? 'bg-green-500' 
+                : apiConnected === false 
+                ? 'bg-red-500'
+                : 'bg-yellow-500'
+            }`} />
+            <span className="text-sm font-medium">
+              {apiConnected === true && '🟢 API Conectada'}
+              {apiConnected === false && '🔴 API Desconectada'}
+              {apiConnected === null && '🟡 Verificando API...'}
+            </span>
+            {apiConnected === false && (
+              <button 
+                onClick={checkApiConnection}
+                className="ml-auto px-3 py-1 text-xs border border-gray-300 rounded"
+              >
+                🔄 Reconectar
+              </button>
+            )}
+          </div>
+
+          {/* Mensajes de estado */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+              ⚠️ {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md mb-4">
+              {success}
+            </div>
+          )}
+
+          <div className="grid gap-6 lg:grid-cols-2">
         {/* Formulario para agregar eventos */}
         <div className="border rounded-lg p-6">
           <h2 className="text-xl font-bold mb-2">➕ Agregar Evento</h2>
@@ -384,6 +438,8 @@ export function EventManagement({ onNavigate }: EventManagementProps) {
           </div>
         </div>
       </div>
+      </>
+    )}
     </div>
   );
 }

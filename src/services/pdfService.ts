@@ -121,11 +121,15 @@ export const generateTicketPDFLocal = async (
     // Convertir PDF a Blob y crear URL de descarga
     const pdfBlob = pdf.output('blob');
     const pdfUrl = URL.createObjectURL(pdfBlob);
+    
+    // Convertir a base64 para envío por email
+    const pdfBase64 = pdf.output('datauristring').split(',')[1]; // Obtener solo la parte base64
 
     return {
       success: true,
       pdfUrl: pdfUrl,
       pdfBlob: pdfBlob,
+      pdfBase64: pdfBase64,
       message: 'Entrada generada exitosamente'
     };
 
