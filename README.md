@@ -1,8 +1,6 @@
 # 📊 API de Reportes - Eventos Viña
 
 **Proyecto:** IngSoft1V1  
-**Historia de Usuario:** MFLP-15 - Reportes de ventas por evento, fecha y categoría
-
 ## 👥 Integrantes
 - Andres Calderon
 - Bastian Kramarenko
@@ -168,3 +166,4 @@ python app_reportes.py
 - Reportes API: `RESUMEN_PROYECTO.md`
 >>>>>>> Stashed changes
   
+
