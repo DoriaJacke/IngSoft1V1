@@ -372,14 +372,6 @@ export const QRValidationSimple: React.FC<QRValidationSimpleProps> = ({ onBack }
                   >
                     🔃 Refrescar Página
                   </Button>
-                  <Button 
-                    onClick={handleSwitchToManual} 
-                    variant="outline" 
-                    size="sm"
-                    className="text-xs"
-                  >
-                    ✏️ Ingresar Manual
-                  </Button>
                 </div>
                 <div className="mt-3 text-xs opacity-75 bg-blue-50 dark:bg-blue-950 p-2 rounded">
                   💡 <strong>Tip rápido:</strong> Cierra todas las apps de videoconferencia (Zoom, Teams, etc.) y otras pestañas del navegador que usen cámara antes de presionar "Reintentar".
