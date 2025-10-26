@@ -34,7 +34,7 @@ def create_purchase():
         # Generar número de orden único
         order_number = f"ORD-{datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}"
         
-        # Crear la compra
+        # Crear la compra con estado 'completed' (el pago ya fue procesado en el frontend)
         purchase = Purchase(
             order_number=order_number,
             user_id=data['userId'],
@@ -43,8 +43,9 @@ def create_purchase():
             unit_price=data['unitPrice'],
             service_charge=data.get('serviceCharge', 0),
             total_price=data['totalPrice'],
-            status='pending',
-            qr_code_data=f"ORD:{order_number}:USER:{user.email}:QTY:{data['quantity']}"
+            status='completed',  # Estado completado porque el pago ya fue simulado
+            qr_code_data=f"ORD:{order_number}:USER:{user.email}:QTY:{data['quantity']}",
+            purchase_date=datetime.utcnow()  # Registrar fecha de compra
         )
         
         db.session.add(purchase)
@@ -64,8 +65,13 @@ def create_purchase():
             tickets.append(ticket)
             db.session.add(ticket)
         
-        # Actualizar entradas disponibles
+        # ⚠️ IMPORTANTE: Actualizar entradas disponibles del evento
+        # Descontar la cantidad comprada
         event.available_tickets -= data['quantity']
+        
+        # Log para debugging
+        print(f"✅ Compra {order_number}: {data['quantity']} entradas descontadas del evento {event.id}")
+        print(f"   Entradas restantes: {event.available_tickets}/{event.total_tickets}")
         
         db.session.commit()
         
@@ -151,11 +157,24 @@ def update_purchase_status(purchase_id):
         purchase.status = data['status']
         purchase.updated_at = datetime.utcnow()
         
-        # Si se cancela la compra, devolver las entradas disponibles
-        if data['status'] == 'cancelled' and old_status != 'cancelled':
-            event = Event.query.get(purchase.event_id)
-            if event:
-                event.available_tickets += purchase.quantity
+        event = Event.query.get(purchase.event_id)
+        if not event:
+            return jsonify({'error': 'Evento no encontrado'}), 404
+        
+        # Manejar cambios de estado que afectan disponibilidad de entradas
+        # Si se cancela o reembolsa una compra que estaba completada/pendiente, devolver entradas
+        if data['status'] in ['cancelled', 'refunded'] and old_status not in ['cancelled', 'refunded']:
+            event.available_tickets += purchase.quantity
+            print(f"✅ Compra {purchase.order_number} {data['status']}: {purchase.quantity} entradas devueltas al evento {event.id}")
+            print(f"   Entradas disponibles ahora: {event.available_tickets}/{event.total_tickets}")
+        
+        # Si se completa una compra que estaba cancelada, descontar las entradas nuevamente
+        elif data['status'] == 'completed' and old_status in ['cancelled', 'refunded']:
+            if event.available_tickets < purchase.quantity:
+                return jsonify({'error': 'No hay suficientes entradas disponibles para reactivar esta compra'}), 400
+            event.available_tickets -= purchase.quantity
+            print(f"✅ Compra {purchase.order_number} reactivada: {purchase.quantity} entradas descontadas del evento {event.id}")
+            print(f"   Entradas disponibles ahora: {event.available_tickets}/{event.total_tickets}")
         
         db.session.commit()
         

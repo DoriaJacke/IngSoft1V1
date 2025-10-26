@@ -20,7 +20,7 @@ export const Header = ({ onNavigate }: HeaderProps) => {
             className="cursor-pointer"
             onClick={() => onNavigate('home')}
           >
-            <h1 className="text-blue-600 text-xl font-bold">EventosChile</h1>
+            <h1 className="text-blue-600 text-xl font-bold">Eventos Viña</h1>
           </div>
           
           <div className="flex-1 max-w-lg mx-8">

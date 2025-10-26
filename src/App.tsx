@@ -6,8 +6,7 @@ import { EventDetails } from './components/EventDetails';
 import { LoginRegister } from './components/LoginRegister';
 import { Checkout } from './components/Checkout';
 import { Confirmation } from './components/Confirmation';
-import TestPage from './components/TestPage';
-import { EventManagement } from './components/EventManagementSimple';
+import { EventManagementAdmin } from './components/EventManagementAdmin';
 import { ReportsSimple as Reports } from './components/ReportsSimple';
 import { Purchase } from './types';
 
@@ -72,7 +71,7 @@ export default function App() {
         )}
         
         {currentView === 'management' && (
-          <EventManagement onNavigate={handleNavigate} />
+          <EventManagementAdmin onNavigate={handleNavigate} />
         )}
         
         {currentView === 'reports' && (

@@ -1,7 +1,10 @@
 import { PurchaseDetails, EmailResult } from '../types/emailTypes';
 import { generateTicketPDFLocal } from './pdfService';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// En desarrollo usamos el proxy de Vite (/api -> http://localhost:5001)
+// En producción usamos la URL completa
+const isDevelopment = import.meta.env.DEV;
+const API_BASE_URL = isDevelopment ? '/api' : 'http://localhost:5001/api';
 const NODE_API_URL = 'http://localhost:4000/api';
 
 // Servicio para manejar usuarios (modo offline con localStorage como fallback)

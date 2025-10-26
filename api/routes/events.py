@@ -139,3 +139,31 @@ def update_event(event_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Error interno del servidor: {str(e)}'}), 500
+
+@events_bp.route('/events/<string:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    """Eliminar un evento (solo admin)"""
+    try:
+        event = Event.query.get(event_id)
+        if not event:
+            return jsonify({'error': 'Evento no encontrado'}), 404
+        
+        # Guardar información del evento antes de eliminarlo
+        event_info = {
+            'id': event.id,
+            'title': event.title,
+            'artist': event.artist
+        }
+        
+        db.session.delete(event)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Evento "{event_info["title"]}" eliminado exitosamente',
+            'deleted_event': event_info
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error interno del servidor: {str(e)}'}), 500

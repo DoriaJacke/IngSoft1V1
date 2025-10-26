@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { Event } from '../types';
 import { events } from '../data/events';
-import { Calendar, MapPin, Clock, Ticket, ArrowLeft } from 'lucide-react';
+import { Calendar, MapPin, Clock, Ticket, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
+import { eventosPublicosService } from '../services/apiClient';
 
 interface EventDetailsProps {
   eventId: string;
@@ -11,10 +13,96 @@ interface EventDetailsProps {
 
 export const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onNavigate }) => {
   const { isAuthenticated } = useAuth();
-  const event = events.find(e => e.id === eventId);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Cargar evento desde la API
+  useEffect(() => {
+    const loadEvent = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Primero intentar obtener desde la API
+        const response = await eventosPublicosService.obtenerEvento(eventId);
+        
+        if (response.success && response.event) {
+          // Convertir el evento de la API al formato del frontend
+          const eventFromAPI: Event = {
+            id: response.event.id,
+            title: response.event.title,
+            artist: response.event.artist,
+            date: response.event.date,
+            time: response.event.time || '',
+            venue: response.event.venue,
+            location: response.event.location,
+            price: response.event.price,
+            image: response.event.image || 'https://images.unsplash.com/photo-1543147012-c049aefea8a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwY3Jvd2QlMjBmZXN0aXZhbHxlbnwxfHx8fDE3NTk1MjczMDV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+            description: response.event.description || '',
+            category: response.event.category || 'General',
+            availableTickets: response.event.availableTickets
+          };
+          
+          setEvent(eventFromAPI);
+        } else {
+          throw new Error('Evento no encontrado en la API');
+        }
+      } catch (err) {
+        console.error('Error cargando evento desde API:', err);
+        // Fallback: buscar en eventos estáticos
+        const fallbackEvent = events.find(e => e.id === eventId);
+        if (fallbackEvent) {
+          setEvent(fallbackEvent);
+          setError('⚠️ Mostrando evento de demostración. El evento de la API no está disponible.');
+        } else {
+          setError('Evento no encontrado');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [eventId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Cargando evento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !event) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button onClick={() => onNavigate('home')} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver a eventos
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!event) {
-    return <div>Evento no encontrado</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Evento no encontrado</p>
+          <Button onClick={() => onNavigate('home')} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver a eventos
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const handleBuyTicket = () => {
@@ -38,6 +126,13 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ eventId, onNavigate 
           <ArrowLeft className="w-4 h-4 mr-2" />
           Volver a eventos
         </Button>
+
+        {/* Mostrar mensaje de error si existe */}
+        {error && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md mb-6">
+            {error}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Section */}

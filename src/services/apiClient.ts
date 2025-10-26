@@ -172,6 +172,226 @@ export const eventosService = {
 };
 
 /**
+ * SERVICIO DE EVENTOS PÚBLICOS - Para obtener eventos disponibles
+ */
+export const eventosPublicosService = {
+  /**
+   * Obtener todos los eventos activos
+   */
+  async obtenerEventos(filtros?: {
+    category?: string;
+    active?: boolean;
+    page?: number;
+    per_page?: number;
+  }): Promise<{
+    success: boolean;
+    events: Array<{
+      id: string;
+      title: string;
+      artist: string;
+      date: string;
+      time?: string;
+      venue: string;
+      location: string;
+      price: number;
+      image?: string;
+      description?: string;
+      category?: string;
+      availableTickets: number;
+      totalTickets: number;
+      isActive: boolean;
+      createdAt?: string;
+    }>;
+    pagination?: {
+      page: number;
+      pages: number;
+      per_page: number;
+      total: number;
+      has_next: boolean;
+      has_prev: boolean;
+    };
+  }> {
+    const params = new URLSearchParams();
+    
+    if (filtros?.category) {
+      params.append('category', filtros.category);
+    }
+    if (filtros?.active !== undefined) {
+      params.append('active', filtros.active.toString());
+    }
+    if (filtros?.page) {
+      params.append('page', filtros.page.toString());
+    }
+    if (filtros?.per_page) {
+      params.append('per_page', filtros.per_page.toString());
+    }
+
+    const queryString = params.toString();
+    const endpoint = queryString ? `/events?${queryString}` : '/events';
+    
+    return fetchAPI<{
+      success: boolean;
+      events: Array<{
+        id: string;
+        title: string;
+        artist: string;
+        date: string;
+        time?: string;
+        venue: string;
+        location: string;
+        price: number;
+        image?: string;
+        description?: string;
+        category?: string;
+        availableTickets: number;
+        totalTickets: number;
+        isActive: boolean;
+        createdAt?: string;
+      }>;
+      pagination?: {
+        page: number;
+        pages: number;
+        per_page: number;
+        total: number;
+        has_next: boolean;
+        has_prev: boolean;
+      };
+    }>(endpoint);
+  },
+
+  /**
+   * Obtener un evento específico por ID
+   */
+  async obtenerEvento(eventId: string): Promise<{
+    success: boolean;
+    event: {
+      id: string;
+      title: string;
+      artist: string;
+      date: string;
+      time?: string;
+      venue: string;
+      location: string;
+      price: number;
+      image?: string;
+      description?: string;
+      category?: string;
+      availableTickets: number;
+      totalTickets: number;
+      isActive: boolean;
+      createdAt?: string;
+    };
+  }> {
+    return fetchAPI<{
+      success: boolean;
+      event: {
+        id: string;
+        title: string;
+        artist: string;
+        date: string;
+        time?: string;
+        venue: string;
+        location: string;
+        price: number;
+        image?: string;
+        description?: string;
+        category?: string;
+        availableTickets: number;
+        totalTickets: number;
+        isActive: boolean;
+        createdAt?: string;
+      };
+    }>(`/events/${eventId}`);
+  },
+
+  /**
+   * Crear un nuevo evento (desde el administrador)
+   */
+  async crearEvento(evento: {
+    id: string;
+    title: string;
+    artist: string;
+    date: string;
+    time?: string;
+    venue: string;
+    location: string;
+    price: number;
+    image?: string;
+    description?: string;
+    category?: string;
+    availableTickets?: number;
+    totalTickets?: number;
+    isActive?: boolean;
+  }): Promise<ApiResponse<any>> {
+    return fetchAPI<ApiResponse<any>>('/events', {
+      method: 'POST',
+      body: JSON.stringify(evento),
+    });
+  },
+
+  /**
+   * Eliminar un evento específico (desde el administrador)
+   */
+  async eliminarEvento(eventId: string): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    deleted_event?: {
+      id: string;
+      title: string;
+      artist: string;
+    };
+  }> {
+    return fetchAPI<{
+      success: boolean;
+      message?: string;
+      error?: string;
+      deleted_event?: {
+        id: string;
+        title: string;
+        artist: string;
+      };
+    }>(`/events/${eventId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Actualizar un evento específico (desde el administrador)
+   */
+  async actualizarEvento(eventId: string, evento: {
+    title?: string;
+    artist?: string;
+    date?: string;
+    time?: string;
+    venue?: string;
+    location?: string;
+    price?: number;
+    image?: string;
+    description?: string;
+    category?: string;
+    availableTickets?: number;
+    totalTickets?: number;
+    isActive?: boolean;
+  }): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    event?: any;
+  }> {
+    return fetchAPI<{
+      success: boolean;
+      message?: string;
+      error?: string;
+      event?: any;
+    }>(`/events/${eventId}`, {
+      method: 'PUT',
+      body: JSON.stringify(evento),
+    });
+  },
+};
+
+/**
  * SERVICIO DE REPORTES - Para obtener reportes de ventas
  */
 export const reportesService = {
@@ -300,8 +520,8 @@ export function descargarArchivo(blob: Blob, nombreArchivo: string) {
  */
 export async function verificarConexionAPI(): Promise<boolean> {
   try {
-    // En desarrollo, verificamos la conexión a través del proxy
-    const url = isDevelopment ? '/api/docs/' : `${API_BASE_URL}/docs/`;
+    // Verificamos la conexión haciendo una petición simple al endpoint raíz
+    const url = isDevelopment ? '/api/events?per_page=1' : `${API_BASE_URL}/events?per_page=1`;
     const response = await fetch(url);
     return response.ok;
   } catch (error) {

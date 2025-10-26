@@ -5,10 +5,10 @@ def seed_initial_data():
     
     # Solo ejecutar si no hay eventos en la base de datos
     if Event.query.count() > 0:
-        print("📊 Base de datos ya contiene datos, omitiendo seed")
+        print("Base de datos ya contiene datos, omitiendo seed")
         return
     
-    print("🌱 Poblando base de datos con datos iniciales...")
+    print("Poblando base de datos con datos iniciales...")
     
     # Crear eventos iniciales (basados en tu archivo events.ts)
     events_data = [
@@ -137,10 +137,10 @@ def seed_initial_data():
     
     try:
         db.session.commit()
-        print(f"✅ Base de datos poblada exitosamente:")
+        print(f"Base de datos poblada exitosamente:")
         print(f"   - {len(events_data)} eventos creados")
         print(f"   - {len(sample_users)} usuarios creados")
     except Exception as e:
         db.session.rollback()
-        print(f"❌ Error poblando base de datos: {e}")
+        print(f"Error poblando base de datos: {e}")
         raise e

@@ -1,11 +1,12 @@
+import { useState, useEffect } from 'react';
 import { events } from '../data/events';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
-import { CheckCircle, Download, Calendar, MapPin, Mail, AlertCircle } from 'lucide-react';
-import { Purchase } from '../types';
+import { CheckCircle, Download, Calendar, MapPin, Mail, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { Purchase, Event } from '../types';
 import { generateAndDownloadTicketPDF } from '../services/emailService';
 import { PurchaseDetails } from '../types/emailTypes';
-import { useState } from 'react';
+import { eventosPublicosService } from '../services/apiClient';
 
 interface ConfirmationProps {
   eventId: string;
@@ -19,11 +20,83 @@ export const Confirmation: React.FC<ConfirmationProps> = ({
   purchaseData 
 }) => {
   const { user } = useAuth();
-  const event = events.find(e => e.id === eventId);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Cargar evento desde la API
+  useEffect(() => {
+    const loadEvent = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Primero intentar obtener desde la API
+        const response = await eventosPublicosService.obtenerEvento(eventId);
+        
+        if (response.success && response.event) {
+          // Convertir el evento de la API al formato del frontend
+          const eventFromAPI: Event = {
+            id: response.event.id,
+            title: response.event.title,
+            artist: response.event.artist,
+            date: response.event.date,
+            time: response.event.time || '',
+            venue: response.event.venue,
+            location: response.event.location,
+            price: response.event.price,
+            image: response.event.image || 'https://images.unsplash.com/photo-1543147012-c049aefea8a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb25jZXJ0JTIwY3Jvd2QlMjBmZXN0aXZhbHxlbnwxfHx8fDE3NTk1MjczMDV8MA&ixlib=rb-4.1.0&q=80&w=1080',
+            description: response.event.description || '',
+            category: response.event.category || 'General',
+            availableTickets: response.event.availableTickets
+          };
+          
+          setEvent(eventFromAPI);
+        } else {
+          throw new Error('Evento no encontrado en la API');
+        }
+      } catch (err) {
+        console.error('Error cargando evento desde API:', err);
+        // Fallback: buscar en eventos estáticos
+        const fallbackEvent = events.find(e => e.id === eventId);
+        if (fallbackEvent) {
+          setEvent(fallbackEvent);
+          setError('⚠️ Mostrando evento de demostración. El evento de la API no está disponible.');
+        } else {
+          setError('Evento no encontrado');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvent();
+  }, [eventId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Cargando confirmación...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!event) {
-    return <div>Evento no encontrado</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error || 'Evento no encontrado'}</p>
+          <Button onClick={() => onNavigate('home')} variant="outline">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver a eventos
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Usar datos de compra si están disponibles, sino generar datos por defecto
@@ -108,6 +181,13 @@ export const Confirmation: React.FC<ConfirmationProps> = ({
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="max-w-2xl w-full">
+        {/* Mostrar mensaje de error si existe */}
+        {error && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-md mb-6">
+            {error}
+          </div>
+        )}
+        
         <div className="bg-card rounded-lg shadow-lg p-8 text-center">
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">

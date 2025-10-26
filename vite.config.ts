@@ -61,7 +61,8 @@
         '/api': {
           target: 'http://localhost:5001',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
+          // Remover la reescritura para mantener el prefijo /api
+          // rewrite: (path) => path.replace(/^\/api/, ''),
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, _res) => {
               console.log('proxy error', err);
