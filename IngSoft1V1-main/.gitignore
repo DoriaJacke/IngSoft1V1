@@ -58,17 +58,11 @@ Thumbs.db
 # Logs
 *.log
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-instance/*.db
-entradas.db
+# Database (opcional, comentar si quieres versionar la DB con datos)
+# instance/*.db
 
 # Docker
 .dockerignore
 
 # Reportes generados
 reportes_generados/
-
-INGSOFT1V1/
