@@ -41,10 +41,11 @@ COPY app_reportes.py ./
 # Construir el frontend
 RUN npm run build
 
-# Copiar script de inicio
+# Copiar scripts de configuración y startup
+COPY runtime-config.sh ./
 COPY start-services.sh ./
 COPY serve.json ./
-RUN chmod +x start-services.sh
+RUN chmod +x runtime-config.sh start-services.sh
 
 # Crear directorio instance
 RUN mkdir -p instance

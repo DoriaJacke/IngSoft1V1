@@ -6,6 +6,12 @@ echo "==================================="
 echo "Iniciando Eventos Viña Dashboard"
 echo "==================================="
 
+# Ejecutar configuración de runtime si existe HOST_IP
+if [ ! -z "$HOST_IP" ]; then
+    echo "Configurando URLs con HOST_IP=$HOST_IP..."
+    bash /app/runtime-config.sh
+fi
+
 # Iniciar la API Flask en segundo plano
 echo "Iniciando API Flask en puerto 5001..."
 FLASK_PORT=5001 python -m api.app &

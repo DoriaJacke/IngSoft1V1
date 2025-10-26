@@ -1,5 +1,12 @@
 # 🐳 Guía de Docker - Eventos Viña
 
+## 📚 Documentación Relacionada
+
+- **[DESPLIEGUE_REMOTO.md](./DESPLIEGUE_REMOTO.md)**: Guía completa para ejecutar en otro computador (después de docker pull)
+- **README.md**: Documentación general del proyecto
+
+---
+
 ## Requisitos Previos
 
 - Docker Desktop instalado y corriendo
@@ -50,11 +57,125 @@ docker run -d `
 
 ## Acceder a la Aplicación 🌐
 
+### Acceso Local (mismo computador)
+
 Una vez iniciado el contenedor:
 
 - **Frontend**: http://localhost:3000
 - **API**: http://localhost:5001
+- **Email Server**: http://localhost:4000
 - **API Docs (Swagger)**: http://localhost:5001/docs
+
+### Acceso desde Red Local (otros computadores) 🌍
+
+Para que otros computadores en tu red puedan acceder:
+
+#### Opción 1: Script Automático (Recomendado) ✨
+```powershell
+# Ejecutar como Administrador
+.\configure-network.ps1
+```
+
+Este script:
+- ✅ Detecta automáticamente tu IP local
+- ✅ Configura `.env.production` con tu IP
+- ✅ Reconstruye el contenedor
+- ✅ Crea reglas de firewall (opcional)
+
+#### Opción 2: Configuración Manual 🔧
+
+**Paso 1**: Obtén tu IP local
+```powershell
+ipconfig
+# Busca "Dirección IPv4" (ejemplo: 192.168.1.100)
+```
+
+**Paso 2**: Edita `.env.production`
+```bash
+# Reemplaza localhost con tu IP
+VITE_API_BASE_URL=http://192.168.1.100:5001/api
+VITE_EMAIL_API_URL=http://192.168.1.100:4000/api
+```
+
+**Paso 3**: Reconstruye el contenedor
+```powershell
+docker-compose down
+docker-compose build
+docker-compose up -d
+```
+
+**Paso 4**: Configura el Firewall de Windows
+```powershell
+# Ejecutar como Administrador
+New-NetFirewallRule -DisplayName "Eventos Viña - Frontend" -Direction Inbound -LocalPort 3000 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Eventos Viña - API" -Direction Inbound -LocalPort 5001 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Eventos Viña - Email" -Direction Inbound -LocalPort 4000 -Protocol TCP -Action Allow
+```
+
+O manualmente:
+1. Panel de Control → Sistema y Seguridad → Firewall de Windows
+2. Configuración avanzada → Reglas de entrada → Nueva regla
+3. Puerto → TCP → Puertos específicos: 3000, 4000, 5001
+4. Permitir la conexión → Aplicar a todos los perfiles
+
+**Paso 5**: Accede desde otro computador
+```
+http://192.168.1.100:3000  (reemplaza con tu IP)
+```
+
+### Verificar Conectividad de Red 🔍
+
+Desde otro computador en la red:
+```powershell
+# Probar conexión al Frontend
+curl http://192.168.1.100:3000
+
+# Probar conexión a la API
+curl http://192.168.1.100:5001/api/events
+
+# En Windows PowerShell:
+Invoke-WebRequest -Uri http://192.168.1.100:5001/api/events
+```
+
+### Solución: "Se rechaza la conexión" ❌➡️✅
+
+Si recibes el error "Connection refused" desde otro computador:
+
+1. **Verificar que el contenedor esté corriendo**:
+   ```powershell
+   docker ps | Select-String "eventos"
+   ```
+
+2. **Verificar que los puertos estén escuchando**:
+   ```powershell
+   netstat -ano | findstr ":3000"
+   netstat -ano | findstr ":5001"
+   netstat -ano | findstr ":4000"
+   ```
+
+3. **Verificar la IP correcta**:
+   ```powershell
+   ipconfig
+   # Asegúrate de usar la IP de tu adaptador de red activo
+   # NO uses 127.0.0.1 o localhost para acceso remoto
+   ```
+
+4. **Verificar Firewall**:
+   ```powershell
+   Get-NetFirewallRule | Where-Object {$_.DisplayName -like "*Eventos*"}
+   # Debe mostrar las 3 reglas (Frontend, API, Email)
+   ```
+
+5. **Probar desde el mismo computador con la IP**:
+   ```powershell
+   # Si esto falla, el problema es la configuración, no el firewall
+   curl http://192.168.1.100:3000  (usa tu IP real)
+   ```
+
+6. **Verificar que ambos computadores estén en la misma red**:
+   - Deben estar conectados al mismo router/red WiFi
+   - No usar VPN que aísle la conexión
+   - Verificar que no haya restricciones de red corporativa
 
 ## Comandos Útiles 📝
 

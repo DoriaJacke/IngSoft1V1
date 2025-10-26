@@ -4,8 +4,8 @@ import { generateTicketPDFLocal } from './pdfService';
 import jsPDF from 'jspdf';
 import * as QRCode from 'qrcode';
 
-// Base URL del backend (SendGrid)
-const API_BASE = 'http://localhost:4000/api';
+// Base URL del backend (SendGrid) - usar variable de entorno o localhost
+const API_BASE = import.meta.env.VITE_EMAIL_API_URL || 'http://localhost:4000/api';
 
 // Función auxiliar para convertir Blob a base64
 const blobToBase64 = (blob: Blob): Promise<string> => {
