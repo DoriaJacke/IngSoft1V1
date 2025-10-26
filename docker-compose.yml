@@ -1,29 +1,36 @@
-version: '3.8'
-
 services:
   eventos-dashboard:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: eventos_vina_dashboard
     ports:
       - "5001:5001"  # API Flask
+      - "4000:4000"  # Email Server
       - "3000:3000"  # Frontend React
     volumes:
-      # Montar el directorio instance para persistir la base de datos
+      # Persistir la base de datos
       - ./instance:/app/instance
-      # Montar directorio para reportes generados (opcional)
+      # Persistir reportes generados (opcional)
       - ./reportes_generados:/app/reportes_generados
     environment:
       - FLASK_ENV=production
+      - FLASK_PORT=5001
       - NODE_ENV=production
+      - PORT=4000
       - PYTHONUNBUFFERED=1
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_FROM=${SENDGRID_FROM:-no-reply@eventosviña.cl}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/eventos/logs", "&&", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:5001/api/events?per_page=1", "||", "exit", "1"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 40s
 
 volumes:
+  instance_data:
+    driver: local
   reportes_data:
     driver: local

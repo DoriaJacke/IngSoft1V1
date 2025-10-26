@@ -1,52 +1,62 @@
-# Usar imagen base que incluya tanto Python como Node.js
+# Usar imagen base con Python y Node.js
 FROM python:3.11-slim
 
-# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Instalar dependencias del sistema y Node.js
+# Instalar dependencias del sistema, Node.js y herramientas de compilación
 RUN apt-get update && apt-get install -y \
     gcc \
+    g++ \
+    make \
     curl \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Verificar instalaciones
-RUN python --version && node --version && npm --version
-
-# Copiar y instalar dependencias de Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copiar y instalar dependencias de Node.js
+# Copiar archivos de configuración
 COPY package*.json ./
+COPY requirements.txt ./
+
+# Instalar dependencias de Node.js
 RUN npm install
 
-# Copiar todo el código de la aplicación
-COPY . .
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Crear directorio instance si no existe
-RUN mkdir -p instance
+# Instalar serve globalmente para servir el frontend
+RUN npm install -g serve
 
-# Construir la aplicación React para producción
+# Copiar código fuente
+COPY src ./src
+COPY index.html ./
+COPY vite.config.ts ./
+COPY tsconfig.json ./
+COPY tsconfig.node.json ./
+COPY .env.production ./
+COPY .env ./
+COPY api ./api
+COPY server ./server
+COPY app_reportes.py ./
+
+# Construir el frontend
 RUN npm run build
 
-# Copiar script de inicio y darle permisos
-COPY start-services.sh /app/
-RUN chmod +x /app/start-services.sh
+# Copiar script de inicio
+COPY start-services.sh ./
+COPY serve.json ./
+RUN chmod +x start-services.sh
 
-# Instalar curl para health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Crear directorio instance
+RUN mkdir -p instance
 
-# Exponer puertos para ambos servicios
+# Exponer puertos
 EXPOSE 5001 3000
 
 # Variables de entorno
-ENV FLASK_APP=app_reportes.py
+ENV FLASK_APP=api.app
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 ENV NODE_ENV=production
 
-# Comando para iniciar ambos servicios
+# Iniciar servicios
 CMD ["./start-services.sh"]

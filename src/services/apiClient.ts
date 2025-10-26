@@ -4,10 +4,12 @@
  */
 
 // Configuración base de la API
-// En desarrollo usamos el proxy de Vite (/api -> http://localhost:5001)
-// En producción apuntamos directamente al servidor
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = isDevelopment ? '/api' : 'http://localhost:5001';
+// Usa la variable de entorno VITE_API_BASE_URL
+// En desarrollo (npm run dev): /api -> proxy de Vite a localhost:5001
+// En producción (build): http://localhost:5001/api -> acceso directo
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+
+console.log('🔧 API Base URL configurada:', API_BASE_URL);
 
 // Tipos para la API de reportes
 export interface EventoLog {
@@ -521,7 +523,7 @@ export function descargarArchivo(blob: Blob, nombreArchivo: string) {
 export async function verificarConexionAPI(): Promise<boolean> {
   try {
     // Verificamos la conexión haciendo una petición simple al endpoint raíz
-    const url = isDevelopment ? '/api/events?per_page=1' : `${API_BASE_URL}/events?per_page=1`;
+    const url = `${API_BASE_URL}/events?per_page=1`;
     const response = await fetch(url);
     return response.ok;
   } catch (error) {
