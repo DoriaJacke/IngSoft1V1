@@ -14,8 +14,6 @@ Eventos viña: venta de entradas y verificación de entradas, evitando la duplic
 
 Esta es una aplicación web para la venta de entradas de eventos que incluye un sistema automatizado de envío de emails de confirmación.
 
-## 🎯 Historias de Usuario Implementadas
-
 ### Sistema de Email con SendGrid
 **"Como comprador quiero recibir un email de confirmación con mi entrada en PDF para tener comprobante de mi compra"**
 
@@ -27,31 +25,31 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 
 ## 🚀 Ejecución Rápida
 
-### Frontend (Venta de Entradas + Email)
-```bash
-npm install
-npm run dev        # Frontend en http://localhost:5173
-npm run server     # Backend SendGrid en http://localhost:4000
-```
+# Paso 1
+python -m venv venv
 
-### Backend (Reportes - Docker Hub)
-```bash
-docker run -d -p 5001:5001 --name eventos-reportes jfuenzalida/eventos-vina-reportes:latest
-```
-**Acceder a:** http://localhost:5001/docs/
+# Paso 2
+.\venv\Scripts\Activate.ps1
 
-### Backend (Reportes - Docker Local)
-```bash
-.\docker-run.ps1     # Windows
-./docker-run.sh      # Linux/Mac
-```
+# Paso 3
+python -m pip install --upgrade pip
 
-### Backend (Reportes - Instalación Local)
-```bash
+# Paso 4
 pip install -r requirements.txt
-python crear_datos_testing.py
-python app_reportes.py
-```
+
+# Paso 5
+python -m api.app
+
+# Paso 6
+En otro terminal correr el siguiente comando 
+  npm install
+
+# Paso 7
+npm run server
+
+# Paso 8
+En otro terminal correr el siguiente comando
+   npm run dev
 
 ## 📧 Sistema de Email con SendGrid
 
@@ -192,4 +190,5 @@ python app_reportes.py
 - Validación de Entradas: Incluida en panel de administrador
 >>>>>>> Stashed changes
   
+
 
