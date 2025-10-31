@@ -14,10 +14,12 @@ pip install -r requirements.txt
 python -m api.app
 
 # Paso 6
-npm install
+En otro terminal correr el siguiente comando 
+  npm install
 
 # Paso 7
 npm run server
 
 # Paso 8
-npm run dev
+En otro terminal correr el siguiente comando
+   npm run dev
