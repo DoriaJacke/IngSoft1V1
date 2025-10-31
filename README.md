@@ -25,31 +25,29 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 
 ## 🚀 Ejecución Rápida
 
-# Paso 1
+### Paso 1
 python -m venv venv
 
-# Paso 2
+### Paso 2
 .\venv\Scripts\Activate.ps1
 
-# Paso 3
+### Paso 3
 python -m pip install --upgrade pip
 
-# Paso 4
+### Paso 4
 pip install -r requirements.txt
 
-# Paso 5
+### Paso 5
 python -m api.app
 
-# Paso 6
-En otro terminal correr el siguiente comando 
-  npm install
+### Paso 6
+En otro terminal correr el siguiente comando " npm install "
 
-# Paso 7
+### Paso 7
 npm run server
 
-# Paso 8
-En otro terminal correr el siguiente comando
-   npm run dev
+### Paso 8
+En otro terminal correr el siguiente comando  " npm run dev "
 
 ## 📧 Sistema de Email con SendGrid
 
@@ -190,5 +188,6 @@ En otro terminal correr el siguiente comando
 - Validación de Entradas: Incluida en panel de administrador
 >>>>>>> Stashed changes
   
+
 
 
