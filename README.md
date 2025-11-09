@@ -23,42 +23,7 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 ### Sistema de Validación de Entradas
 **"Como personal de seguridad quiero validar entradas comparando el RUT del QR de la entrada con el RUT del carnet de identidad para evitar falsificaciones y duplicaciones"**
 
-## 🚀 Ejecución Rápida
 
-### Paso 1
-   ```bash
-python -m venv venv
-   ```
-### Paso 2
-   ```bash
-.\venv\Scripts\Activate.ps1
-   ```
-### Paso 3
-   ```bash
-python -m pip install --upgrade pip
-   ```
-### Paso 4
-   ```bash
-pip install -r requirements.txt
-   ```
-### Paso 5
-   ```bash
-python -m api.app
-   ```
-### Paso 6
-En otro terminal correr el siguiente comando 
-   ```bash
-npm install 
-   ```
-### Paso 7
-   ```bash
-npm run server
-   ```
-### Paso 8
-En otro terminal correr el siguiente comando 
-   ```bash
-npm run dev 
-   ```
 ## 📧 Sistema de Email con SendGrid
 
 ### Funcionalidades
@@ -77,13 +42,6 @@ npm run dev
 - Diseño responsive y profesional
 - Contacto de soporte incluido
 
-
-## Ejecutar el proyecto
-
-1. **Instalar dependencias**:
-   ```bash
-   npm install
-=======
 
 ### Configuración
 1. Crea un archivo `.env` en la raíz con:
@@ -183,9 +141,42 @@ npm run dev
 - Reportes API: `RESUMEN_PROYECTO.md`
 - Validación de Entradas: Incluida en panel de administrador
 >>>>>>> Stashed changes
-  
+  ```
 
 
+## Ejecutar el proyecto
 
-
-
+### Paso 1
+   ```bash
+python -m venv venv
+   ```
+### Paso 2
+   ```bash
+.\venv\Scripts\Activate.ps1
+   ```
+### Paso 3
+   ```bash
+python -m pip install --upgrade pip
+   ```
+### Paso 4
+   ```bash
+pip install -r requirements.txt
+   ```
+### Paso 5
+   ```bash
+python -m api.app
+   ```
+### Paso 6
+En otro terminal correr el siguiente comando 
+   ```bash
+npm install 
+   ```
+### Paso 7
+   ```bash
+npm run server
+   ```
+### Paso 8
+En otro terminal correr el siguiente comando 
+   ```bash
+npm run dev 
+   ```
