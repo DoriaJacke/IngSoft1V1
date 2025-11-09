@@ -26,29 +26,39 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 ## 🚀 Ejecución Rápida
 
 ### Paso 1
+   ```bash
 python -m venv venv
-
+   ```
 ### Paso 2
+   ```bash
 .\venv\Scripts\Activate.ps1
-
+   ```
 ### Paso 3
+   ```bash
 python -m pip install --upgrade pip
-
+   ```
 ### Paso 4
+   ```bash
 pip install -r requirements.txt
-
+   ```
 ### Paso 5
+   ```bash
 python -m api.app
-
+   ```
 ### Paso 6
-En otro terminal correr el siguiente comando " npm install "
-
+En otro terminal correr el siguiente comando 
+   ```bash
+npm install 
+   ```
 ### Paso 7
+   ```bash
 npm run server
-
+   ```
 ### Paso 8
-En otro terminal correr el siguiente comando  " npm run dev "
-
+En otro terminal correr el siguiente comando 
+   ```bash
+npm run dev "
+   ```
 ## 📧 Sistema de Email con SendGrid
 
 ### Funcionalidades
@@ -67,20 +77,6 @@ En otro terminal correr el siguiente comando  " npm run dev "
 - Diseño responsive y profesional
 - Contacto de soporte incluido
 
-## Configuración del Sistema de Email
-
-1. **Instalar dependencias**:
-   ```bash
-   npm install @emailjs/browser
-   ```
-
-2. **Configurar EmailJS**:
-   - Lee las instrucciones detalladas en `EMAIL_SETUP.md`
-   - Configura tu cuenta en [EmailJS](https://www.emailjs.com/)
-   - Actualiza las credenciales en `src/services/emailService.ts`
-
-3. **Ver ejemplo de email**:
-   - Abre `email-template-example.html` en tu navegador para ver cómo se ve el email
 
 ## Ejecutar el proyecto
 
@@ -188,6 +184,7 @@ En otro terminal correr el siguiente comando  " npm run dev "
 - Validación de Entradas: Incluida en panel de administrador
 >>>>>>> Stashed changes
   
+
 
 
 
