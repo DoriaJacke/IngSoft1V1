@@ -57,7 +57,7 @@ npm run server
 ### Paso 8
 En otro terminal correr el siguiente comando 
    ```bash
-npm run dev "
+npm run dev 
    ```
 ## 📧 Sistema de Email con SendGrid
 
@@ -184,6 +184,7 @@ npm run dev "
 - Validación de Entradas: Incluida en panel de administrador
 >>>>>>> Stashed changes
   
+
 
 
 
