@@ -129,12 +129,6 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 - **OpenPyXL** - Exportación a Excel
 - **Docker** - Containerización
 
-## 🐳 Docker Hub
-
-**Imagen Reportes:** `jfuenzalida/eventos-vina-reportes:latest`  
-**URL:** https://hub.docker.com/r/jfuenzalida/eventos-vina-reportes
-
----
 
 **Documentación detallada:**
 - Email con SendGrid: `README_SENDGRID.md`
@@ -180,3 +174,4 @@ En otro terminal correr el siguiente comando
    ```bash
 npm run dev 
    ```
+
