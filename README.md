@@ -55,11 +55,9 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
    SECRET_KEY=your-secret-key-change-in-production
 
 En caso de no funcionar el puerto 5001, cambiarlo por 5000
->>>>>>> Stashed changes
-   ```
 
-2. Documentación completa: `README_SENDGRID.md`
-
+2. Documentación completa:
+   
 ## 🔐 Sistema de Validación de Entradas
 
 ### Funcionalidades
@@ -96,9 +94,7 @@ En caso de no funcionar el puerto 5001, cambiarlo por 5000
 
 ### Endpoints Principales
 - **Swagger UI:** http://localhost:5001/docs/
-- **Reportes JSON:** `/reportes/ventas?formato=json`
 - **Reportes PDF:** `/reportes/ventas?formato=pdf`
-- **Reportes Excel:** `/reportes/ventas?formato=excel`
 
 ### Filtros Disponibles:
 - `evento_id` - Por evento específico
@@ -138,7 +134,6 @@ En caso de no funcionar el puerto 5001, cambiarlo por 5000
 - Email con SendGrid: `README_SENDGRID.md`
 - Reportes API: `RESUMEN_PROYECTO.md`
 - Validación de Entradas: Incluida en panel de administrador
->>>>>>> Stashed changes
   ```
 
 
@@ -178,6 +173,7 @@ En otro terminal correr el siguiente comando
    ```bash
 npm run dev 
    ```
+
 
 
 
