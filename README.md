@@ -18,7 +18,7 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
 **"Como comprador quiero recibir un email de confirmación con mi entrada en PDF para tener comprobante de mi compra"**
 
 ### Sistema de Reportes
-**"Como administrador quiero ver el reporte de ventas por evento, fecha y categoría para tomar decisiones estratégicas. El sistema otorga los reportes vía PDF y Excel. El sistema puede filtrar mediante el tipo de entrada (sector)"**
+**"Como administrador quiero ver el reporte de ventas por evento, fecha y categoría para tomar decisiones estratégicas. El sistema otorga los reportes vía PDF. El sistema puede filtrar mediante el tipo de entrada (sector/categoria)"**
 
 ### Sistema de Validación de Entradas
 **"Como personal de seguridad quiero validar entradas comparando el RUT del QR de la entrada con el RUT del carnet de identidad para evitar falsificaciones y duplicaciones"**
@@ -51,6 +51,8 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
    PORT=4000
 >>>>>>> Stashed changes
    ```
+```
+En el archivo `.env` colocar que el puerto de la API creada sea el 5001
 
 2. Documentación completa: `README_SENDGRID.md`
 
@@ -174,4 +176,5 @@ En otro terminal correr el siguiente comando
    ```bash
 npm run dev 
    ```
+
 
