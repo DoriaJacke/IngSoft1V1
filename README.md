@@ -49,10 +49,14 @@ Esta es una aplicación web para la venta de entradas de eventos que incluye un 
    SENDGRID_API_KEY=tu_api_key
    SENDGRID_FROM=tu_email_verificado@ejemplo.com
    PORT=4000
+   # Flask API Configuration
+   FLASK_PORT=5001
+   FLASK_DEBUG=True
+   SECRET_KEY=your-secret-key-change-in-production
+
+En caso de no funcionar el puerto 5001, cambiarlo por 5000
 >>>>>>> Stashed changes
    ```
-```
-En el archivo `.env` colocar que el puerto de la API creada sea el 5001
 
 2. Documentación completa: `README_SENDGRID.md`
 
@@ -128,8 +132,6 @@ En el archivo `.env` colocar que el puerto de la API creada sea el 5001
 - **Python + Flask** - API REST
 - **SQLite** - Base de datos
 - **ReportLab** - Generación de PDFs
-- **OpenPyXL** - Exportación a Excel
-- **Docker** - Containerización
 
 
 **Documentación detallada:**
@@ -176,5 +178,6 @@ En otro terminal correr el siguiente comando
    ```bash
 npm run dev 
    ```
+
 
 
